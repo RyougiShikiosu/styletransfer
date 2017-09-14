@@ -2,7 +2,7 @@ Neural Style Transfer
 =====
 
 
-This repository is for [Meta Networks for Neural Style Transfer](https://arxiv.org/abs/1709.04111). The meta network takes in the style image and generated an image transformation network for neural style transfer. The fast generated model is only 449KB, which is able to real-time execute on a mobile device. For more details please refer and cite this paper
+This repository is for [Meta Networks for Neural Style Transfer](https://arxiv.org/abs/1709.04111). The meta network takes in the style image and generated an image transformation network for neural style transfer. The fast generated model is only ```diff + 449KB```, which is able to real-time execute on a mobile device. For more details please refer and cite this paper
 
     @inproceedings{shen2017style,
       author = {Falong Shen, Shuicheng Yan and Gang Zeng},
@@ -47,8 +47,5 @@ Python code. Please execute the scripts in Python folder. Meta model is very hug
     
 Put these models into <font color=red>python/model/<font> and modify the model name in <font color=red>demo.py<font>.
 
-```diff
-+ 1fasdf
-- dfadf
-```
+
 
