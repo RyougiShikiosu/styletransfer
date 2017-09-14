@@ -16,6 +16,12 @@ Installation
 This library is based on [Caffe](https://github.com/BVLC/caffe). [CuDNN 7](https://developer.nvidia.com/cudnn) and [NCCL 1](https://github.com/NVIDIA/nccl) are required. Please follow
 the installation instruction of [Caffe](https://github.com/BVLC/caffe).
 
+Meta Network Architecture
+----
+<p float="center">
+<img src="python/network.png", width="500" height="300"/>
+</p>
+
 Examples
 ----
 The size of image transformation network for the following images is 7MB.
@@ -25,9 +31,7 @@ The size of image transformation network for the following images is 7MB.
 </p>
 
 
-<p float="center">
-<img src="python/network.png", width="500" height="300"/>
-</p>
+
 
 
 Scripts
