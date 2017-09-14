@@ -17,9 +17,12 @@ This library is based on [Caffe](https://github.com/BVLC/caffe). [CuDNN 7](https
 the installation instruction of [Caffe](https://github.com/BVLC/caffe).
 
 
-![Examples](https://github.com/FalongShen/styletransfer/blob/master/figures.pdf)
 
-![Network Architecture](https://github.com/FalongShen/styletransfer/blob/master/network.pdf)
+![Examples](1.png)
+![Examples](2.png)
+![Examples](3.png)
+
+![Network Architecture](network.png)
 
 
 Scripts
