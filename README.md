@@ -39,8 +39,8 @@ Scripts
 Python code. Please execute the scripts in Python folder. Meta model is very huge while the generated model is very small. 
 
 * pretrained meta models</br>
-    [train_8 (130M), generated model is 449KB](http://pan.baidu.com/s/1eRQI01O)</br>
-    [train_32(968M), generated model is 7MB](http://pan.baidu.com/s/1mhGwQJA)</br>
+    [train_8 (130M), generated model is 449KB](http://pan.baidu.com/s/1mhGwQJA)</br>
+    [train_32(968M), generated model is 7MB](http://pan.baidu.com/s/1eRQI01O)</br>
     
 Put these models into <font color=red>python/model/<font> and modify the model name in <font color=red>matcaffe_fcn.m<font>.
 
