@@ -17,6 +17,10 @@ This library is based on [Caffe](https://github.com/BVLC/caffe). [CuDNN 7](https
 the installation instruction of [Caffe](https://github.com/BVLC/caffe).
 
 
+[Examples](figures.pdf)
+[Network Architecture](network.pdf)
+
+
 Scripts
 ----
 Python code. Please execute the scripts in Python folder. Meta model is very huge while the generated model is very small. 
