@@ -31,7 +31,10 @@ The size of image transformation network for the following images is 7MB.
 </div>
 
 
-
+The size of image transformation network for the following images is 449KB.
+<div align=center>
+<img src="python/1.png", width="400" height="500"/> <img src="python//4.png"/>
+</div>
 
 
 Scripts
