@@ -20,16 +20,14 @@ Examples
 ----
 The size of image transformation network is 7MB.
 
-
-Solarized dark             |  Solarized Ocean
-:-------------------------:|:-------------------------:
-<img src="python/1.png", width="300" height="400", />  |  <img src="python//2.png", width="300" height="400"/>
-
+<p float="left">
+<img src="python/1.png", width="300" height="400"/> <img src="python//2.png", width="300" height="400"/>
+</p>
 
 
-
+<p float="left">
 <img src="python/network.png", width="300" height="150"/>
-
+</p>
 
 
 Scripts
