@@ -40,7 +40,6 @@ Python code. Please execute the scripts in Python folder. Meta model is very hug
 
 * pretrained meta models</br>
     [train_8 (130M), generated model is 449KB](http://pan.baidu.com/s/1bp6KGY7)</br>
-    [train_16(298M)](http://pan.baidu.com/s/1jIrDzb4)</br>
     [train_32(968M),generated model is 7MB](http://pan.baidu.com/s/1pLgDU4b)</br>
     
 Put these models into <font color=red>python/model/<font> and modify the model name in <font color=red>matcaffe_fcn.m<font>.
