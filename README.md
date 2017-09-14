@@ -23,13 +23,13 @@ The size of image transformation network is 7MB.
 
 Solarized dark             |  Solarized Ocean
 :-------------------------:|:-------------------------:
-<img width="300" height="400", src="python/1.png">  |  <img width="300" height="400", src="python//2.png">
+<img width="300" height="400", src="python/1.png"/>  |  <img width="300" height="400", src="python//2.png"/>
 
 
 
-<center> 
-<img width="300" height="150", src="python/network.png">
-</center>
+
+<img width="300" height="150", src="python/network.png"/>
+
 
 
 Scripts
