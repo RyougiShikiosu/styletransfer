@@ -16,13 +16,16 @@ Installation
 This library is based on [Caffe](https://github.com/BVLC/caffe). [CuDNN 7](https://developer.nvidia.com/cudnn) and [NCCL 1](https://github.com/NVIDIA/nccl) are required. Please follow
 the installation instruction of [Caffe](https://github.com/BVLC/caffe).
 
+Examples
+----
+The size of image transformation network is 7MB.
 
+<img width="300" height="400", src="1.png">
+<img width="300" height="400", src="2.png">
 
-![Examples](1.png)
-![Examples](2.png)
-![Examples](3.png)
+ 
+<img width="300" height="200", src="network.png">
 
-![Network Architecture](network.png)
 
 
 Scripts
