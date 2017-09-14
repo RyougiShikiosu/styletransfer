@@ -48,7 +48,7 @@ Python code. Please execute the scripts in Python folder. Meta model is very hug
 Put these models into <font color=red>python/model/<font> and modify the model name in <font color=red>demo.py<font>.
 
 ```diff
-+ this will be highlighted in green
-- this will be highlighted in red
++ 1fasdf
+- dfadf
 ```
 
