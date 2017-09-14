@@ -18,7 +18,7 @@ the installation instruction of [Caffe](https://github.com/BVLC/caffe).
 
 Examples
 ----
-The size of image transformation network is 7MB.
+The size of image transformation network for the following images is 7MB.
 
 <p float="left">
 <img src="python/1.png", width="400" height="500"/> <img src="python//2.png", width="400" height="500"/>
@@ -26,7 +26,7 @@ The size of image transformation network is 7MB.
 
 
 <p float="center">
-<img src="python/network.png", width="500" height="250"/>
+<img src="python/network.png", width="500" height="300"/>
 </p>
 
 
