@@ -2,7 +2,7 @@ Neural Style Transfer
 =====
 
 
-This repository is for [Meta Networks for Neural Style Transfer](https://arxiv.org/abs/1709.04111).
+This repository is for [Meta Networks for Neural Style Transfer](https://arxiv.org/abs/1709.04111). The meta network takes in the style image and generated an image transformation network for neural style transfer. For more details please refer and cite this paper
 
     @inproceedings{shen2017style,
       author = {Falong Shen, Shuicheng Yan and Gang Zeng},
