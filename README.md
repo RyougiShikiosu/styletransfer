@@ -27,7 +27,7 @@ Solarized dark             |  Solarized Ocean
 
 
 
-<img width="300" height="150", src="python/network.png">
+<img width="300" height="150", src="python\network.png">
 
 
 
