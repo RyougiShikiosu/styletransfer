@@ -21,12 +21,12 @@ Examples
 The size of image transformation network is 7MB.
 
 <p float="left">
-<img src="python/1.png", width="300" height="400"/> <img src="python//2.png", width="300" height="400"/>
+<img src="python/1.png", width="400" height="500"/> <img src="python//2.png", width="400" height="500"/>
 </p>
 
 
-<p float="left">
-<img src="python/network.png", width="300" height="150"/>
+<p float="center">
+<img src="python/network.png", width="500" height="250"/>
 </p>
 
 
