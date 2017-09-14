@@ -20,12 +20,14 @@ Examples
 ----
 The size of image transformation network is 7MB.
 
+<figure class="half">
 <img width="300" height="400", src="1.png">
 <img width="300" height="400", src="2.png">
+</figure>
 
- 
+<center> 
 <img width="300" height="200", src="network.png">
-
+</center>
 
 
 Scripts
