@@ -18,17 +18,17 @@ the installation instruction of [Caffe](https://github.com/BVLC/caffe).
 
 Meta Network Architecture
 ----
-<p float="center">
+<div align=center>
 <img src="python/network.png", width="500" height="300"/>
-</p>
+</div>
 
 Examples
 ----
 The size of image transformation network for the following images is 7MB.
 
-<p float="left">
+<div align=center>
 <img src="python/1.png", width="400" height="500"/> <img src="python//2.png", width="400" height="500"/>
-</p>
+</div>
 
 
 
