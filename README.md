@@ -24,14 +24,14 @@ Meta Network Architecture
 
 Examples
 ----
-The size of image transformation network for the following images is 7MB.
+The size of image transformation network for the following images is `7MB`.
 
 <div align=center>
 <img src="python/1.png", width="400" height="500"/> <img src="python//2.png", width="400" height="500"/>
 </div>
 
 
-The size of image transformation network for the following images is 449KB.
+The size of image transformation network for the following images is `449KB`.
 <div align=center>
 <img src="python/4.png", width="400" height="300"/> 
 </div>
