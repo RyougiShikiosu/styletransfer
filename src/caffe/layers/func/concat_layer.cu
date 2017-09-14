@@ -5,9 +5,9 @@
 
 namespace caffe {
 //-------------------------------------------------------
-template <typename Dtype>
+
 static __global__ void concat_forward(int count,int channels, int i_channels, int cur_channels,int spatial_dim,
-																const Dtype *a, Dtype *b)
+																const float *a, float *b)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -18,9 +18,9 @@ static __global__ void concat_forward(int count,int channels, int i_channels, in
 		b[(n*channels+cur_channels+c)*spatial_dim+s] = a[i];
 	}
 }
-template <typename Dtype>
+
 static __global__ void concat_backward(int count,int channels, int i_channels, int cur_channels,int spatial_dim,
-																const Dtype * b, Dtype *a)
+																const float * b, float *a)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -32,9 +32,9 @@ static __global__ void concat_backward(int count,int channels, int i_channels, i
 	}
 }
 //----------------------------------------------------
-template <typename Dtype>
+
 static __global__ void concat2_forward(int count,int channels,int channels0,int channels1,int spatial_dim,
-																const Dtype *a0, const Dtype * a1, Dtype *b)
+																const float *a0, const float * a1, float *b)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -50,9 +50,9 @@ static __global__ void concat2_forward(int count,int channels,int channels0,int 
 			
 	}
 }
-template <typename Dtype>
+
 static __global__ void concat2_backward(int count,int channels,int channels0,int channels1,int spatial_dim,
-																const Dtype * b, Dtype *a0,  Dtype * a1)
+																const float * b, float *a0,  float * a1)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -69,8 +69,8 @@ static __global__ void concat2_backward(int count,int channels,int channels0,int
 	}
 }
 //----------------------------------------------------
-template <typename Dtype>
-void ConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ConcatLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (bottom.size() == 2)
 	{
@@ -81,7 +81,7 @@ void ConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const v
 		int height = bottom[0]->height();
 		int width = bottom[0]->width();
 
-		concat2_forward<Dtype><<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		concat2_forward<<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(top[0]->count(),channels,channels0,channels1,height*width,
 					bottom[0]->gpu_data(),bottom[1]->gpu_data(),top[0]->mutable_gpu_data());
 	}
@@ -96,7 +96,7 @@ void ConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const v
 		for (int i =0; i < bottom.size();i++)
 		{
 			int i_channels = bottom[i]->channels();
-			concat_forward<Dtype><<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
+			concat_forward<<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
 			(bottom[i]->count(),channels,i_channels,cur_channels,height*width,
 						bottom[i]->gpu_data(), top[0]->mutable_gpu_data());		
 			cur_channels += i_channels;
@@ -106,8 +106,8 @@ void ConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const v
 		LOG(FATAL)<<"wrong bottom.size";
 }
 
-template <typename Dtype>
-void ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ConcatLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	if  (bottom.size() == 2)
 	{
@@ -118,7 +118,7 @@ void ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vec
 		int height = bottom[0]->height();
 		int width = bottom[0]->width();
 
-		concat2_backward<Dtype><<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		concat2_backward<<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(top[0]->count(),channels,channels0,channels1,height*width,
 					top[0]->gpu_diff(), bottom[0]->mutable_gpu_diff(),bottom[1]->mutable_gpu_diff());		
 	}
@@ -133,7 +133,7 @@ void ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vec
 		for (int i =0; i < bottom.size();i++)
 		{
 			int i_channels = bottom[i]->channels();
-			concat_backward<Dtype><<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
+			concat_backward<<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
 			(bottom[i]->count(),channels,i_channels,cur_channels,height*width,
 						top[0]->gpu_diff(), bottom[i]->mutable_gpu_diff());		
 			cur_channels += i_channels;
@@ -142,8 +142,8 @@ void ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vec
 	else
 		LOG(FATAL)<<"wrong bottom.size";
 }
-template <typename Dtype>
-void ConcatLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ConcatLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (bottom.size() == 2)
 	{
@@ -154,7 +154,7 @@ void ConcatLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, cons
 		int height = bottom[0]->height();
 		int width = bottom[0]->width();
 
-		concat2_forward<Dtype><<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		concat2_forward<<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(top[0]->count(),channels,channels0,channels1,height*width,
 					bottom[0]->gpu_sec_diff(),bottom[1]->gpu_sec_diff(),top[0]->mutable_gpu_sec_diff());
 	}
@@ -169,7 +169,7 @@ void ConcatLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, cons
 		for (int i =0; i < bottom.size();i++)
 		{
 			int i_channels = bottom[i]->channels();
-			concat_forward<Dtype><<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
+			concat_forward<<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
 			(bottom[i]->count(),channels,i_channels,cur_channels,height*width,
 						bottom[i]->gpu_sec_diff(), top[0]->mutable_gpu_sec_diff());		
 			cur_channels += i_channels;
@@ -178,5 +178,4 @@ void ConcatLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, cons
 	else
 		LOG(FATAL)<<"wrong bottom.size";
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ConcatLayer);
 }  // namespace caffe

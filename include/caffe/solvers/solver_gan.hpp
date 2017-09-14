@@ -11,13 +11,12 @@ namespace caffe
 {
 
 
-template <typename Dtype>
-class SolverGAN : public Solver<Dtype>
+class SolverGAN : public Solver
 {
  public:
  	explicit SolverGAN(const SolverParameter& param);
   void Solve(const char* all_state_file = NULL);
-  void dispaly_loss(std::vector<Dtype> g_loss, std::vector<Dtype> d_loss);
+  void dispaly_loss(std::vector<float> g_loss, std::vector<float> d_loss);
   
   
  	void Snapshot();
@@ -29,19 +28,19 @@ class SolverGAN : public Solver<Dtype>
 
   
   inline const SolverParameter& param() const { return param_; }
-  inline shared_ptr<Net<Dtype> > d_net() { return d_net_; }
-  inline shared_ptr<Net<Dtype> > g_net() { return g_net_; }
-  inline shared_ptr<Net<Dtype> > gd_net() { return gd_net_; }
+  inline shared_ptr<Net > d_net() { return d_net_; }
+  inline shared_ptr<Net > g_net() { return g_net_; }
+  inline shared_ptr<Net > gd_net() { return gd_net_; }
  protected:
   SolverParameter param_;
-  shared_ptr<Net<Dtype> > g_net_;
-  shared_ptr<Net<Dtype> > d_net_;
-  shared_ptr<Net<Dtype> > gd_net_;
+  shared_ptr<Net > g_net_;
+  shared_ptr<Net > d_net_;
+  shared_ptr<Net > gd_net_;
 
 
 
 	int start_iter_;
-	Dtype sum_loss_;
+	float sum_loss_;
 
 
   DISABLE_COPY_AND_ASSIGN(SolverGAN);

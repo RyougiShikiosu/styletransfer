@@ -5,8 +5,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ReLULayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -19,15 +19,14 @@ void ReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vect
 }
 
 
-template <typename Dtype>
-void ReLULayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ReLULayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	
 	
   top[0]->ReshapeLike(*bottom[0]);
-  flag.Reshape(bottom[0]->num(),bottom[0]->channels(),bottom[0]->height(),bottom[0]->width());
+  flag.Reshape((bottom[0]->count()+3)/4,1,1,1);
 }
 
-INSTANTIATE_CLASS(ReLULayer);
 REGISTER_LAYER_CLASS(ReLU);
 }  // namespace caffe

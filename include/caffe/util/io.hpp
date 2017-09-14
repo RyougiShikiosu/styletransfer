@@ -19,8 +19,8 @@ void ReadImageToProto(const string& filename, BlobProto* proto);
 
 cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color);
 
-template <typename Dtype>
-inline void ReadImageToBlob(const string& filename, Blob<Dtype>* blob) {
+
+inline void ReadImageToBlob(const string& filename, Blob* blob) {
   BlobProto proto;
   ReadImageToProto(filename, &proto);
   blob->FromProto(proto);
@@ -28,14 +28,16 @@ inline void ReadImageToBlob(const string& filename, Blob<Dtype>* blob) {
 
 void WriteProtoToImage(const string& filename, const BlobProto& proto);
 
-template <typename Dtype>
-inline void WriteBlobToImage(const string& filename, const Blob<Dtype>& blob) {
+
+inline void WriteBlobToImage(const string& filename, const Blob& blob) {
   BlobProto proto;
   blob.ToProto(&proto);
   WriteProtoToImage(filename, proto);
 }
 
 void ReadImageToDatum(const string& filename, const bool is_color, const int label, const std::string & encoding, Datum* datum);
+
+void ReadImageToDatumMultilabel(const string& filename, const bool is_color, const vector<int> label, const std::string & encoding, Datum* datum);
 
 void ReadProtoFromTextFile(const char* filename,
     Message* proto);

@@ -34,40 +34,6 @@ private:\
   classname(const classname&);\
   classname& operator=(const classname&)
 
-// Instantiate a class with float and double specifications.
-#define INSTANTIATE_CLASS(classname) \
-  char gInstantiationGuard##classname; \
-  template class classname<float>; \
-  template class classname<double>
-
-#define INSTANTIATE_LAYER_GPU_FORWARD(classname) \
-  template void classname<float>::Forward_gpu( \
-      const std::vector<Blob<float>*>& bottom, \
-      const std::vector<Blob<float>*>& top); \
-  template void classname<double>::Forward_gpu( \
-      const std::vector<Blob<double>*>& bottom, \
-      const std::vector<Blob<double>*>& top);
-
-#define INSTANTIATE_LAYER_GPU_BACKWARD(classname) \
-  template void classname<float>::Backward_gpu( \
-      const std::vector<Blob<float>*>& top, \
-      const std::vector<Blob<float>*>& bottom); \
-  template void classname<double>::Backward_gpu( \
-      const std::vector<Blob<double>*>& top, \
-      const std::vector<Blob<double>*>& bottom)
-      
-#define INSTANTIATE_LAYER_GPU_SECFORWARD(classname) \
-  template void classname<float>::SecForward_gpu( \
-      const std::vector<Blob<float>*>& bottom, \
-      const std::vector<Blob<float>*>& top); \
-  template void classname<double>::SecForward_gpu( \
-      const std::vector<Blob<double>*>& bottom, \
-      const std::vector<Blob<double>*>& top);	
-      
-#define INSTANTIATE_LAYER_GPU_FUNCS(classname) \
-  INSTANTIATE_LAYER_GPU_FORWARD(classname); \
-  INSTANTIATE_LAYER_GPU_BACKWARD(classname); \
-  INSTANTIATE_LAYER_GPU_SECFORWARD(classname)
 
 // A simple macro to mark codes that are not implemented, so that when the code
 // is executed we will see a fatal log.
@@ -130,10 +96,11 @@ class Caffe {
 	GETSET(string, drop_state)
   GETSET(string, bn_state)
   GETSET(string, gan_type)
+  GETSET(string, gradient_penalty);
   GETSET(bool, reuse)
   GETSET(bool, frozen_param)
 	GETSET(bool, second_pass)
-
+	GETSET(vector<float *>, gpu_scalar)
 	
 	inline static rng_t* rng() { return Get().rng_; }
 	
@@ -158,6 +125,7 @@ class Caffe {
 	static boost::mutex mu_;  
 	static boost::condition_variable_any cond_; 
 	
+	
  protected:
  	static shared_ptr<Caffe> singleton_;
 
@@ -169,10 +137,11 @@ class Caffe {
   static vector<cudnnHandle_t>  cudnn_handle_;
   
 	static ncclComm_t* comms_;
-
+	static vector<float *>gpu_scalar_;
 	static string drop_state_;
 	static string bn_state_;
 	static string gan_type_;
+	static string gradient_penalty_;
 	static bool frozen_param_;
 	static bool second_pass_;
 	static bool reuse_;

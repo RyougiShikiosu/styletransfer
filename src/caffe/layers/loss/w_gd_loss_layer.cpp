@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void WGdLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void WGdLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void WGdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void WGdLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (Caffe::gan_type() == "train_dnet")
 	{
@@ -46,6 +46,6 @@ void WGdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 }
 
 
-INSTANTIATE_CLASS(WGdLossLayer);
+
 REGISTER_LAYER_CLASS(WGdLoss);
 }  // namespace caffe

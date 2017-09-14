@@ -6,19 +6,19 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void TanHLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void TanHLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void TanHLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TanHLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	top[0]->ReshapeLike(*bottom[0]);
 }
 
 
-INSTANTIATE_CLASS(TanHLayer);
+
 REGISTER_LAYER_CLASS(TanH);
 }  // namespace caffe

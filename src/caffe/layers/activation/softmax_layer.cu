@@ -9,13 +9,13 @@
 
 namespace caffe {
 
-template <typename Dtype>
+
 static __global__ void kernel_channel_max(const int num, const int channels,
-    const int spatial_dim, const Dtype* data, Dtype* out) {
+    const int spatial_dim, const float* data, float* out) {
   CUDA_KERNEL_LOOP(index, num * spatial_dim) {
     int n = index / spatial_dim;
     int s = index % spatial_dim;
-    Dtype maxval = -FLT_MAX;
+    float maxval = -FLT_MAX;
     for (int c = 0; c < channels; ++c) {
       maxval = max(data[(n * channels + c) * spatial_dim + s], maxval);
     }
@@ -23,10 +23,10 @@ static __global__ void kernel_channel_max(const int num, const int channels,
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_channel_subtract(const int count,
     const int num, const int channels,
-    const int spatial_dim, const Dtype* channel_max, Dtype* data) {
+    const int spatial_dim, const float* channel_max, float* data) {
   CUDA_KERNEL_LOOP(index, count) {
     int n = index / channels / spatial_dim;
     int s = index % spatial_dim;
@@ -34,20 +34,20 @@ static __global__ void kernel_channel_subtract(const int count,
   }
 }
 
-template <typename Dtype>
-static __global__ void kernel_exp(const int count, const Dtype* data, Dtype* out) {
+
+static __global__ void kernel_exp(const int count, const float* data, float* out) {
   CUDA_KERNEL_LOOP(index, count) {
     out[index] = exp(data[index]);
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_channel_sum(const int num, const int channels,
-    const int spatial_dim, const Dtype* data, Dtype* channel_sum) {
+    const int spatial_dim, const float* data, float* channel_sum) {
   CUDA_KERNEL_LOOP(index, num * spatial_dim) {
     int n = index / spatial_dim;
     int s = index % spatial_dim;
-    Dtype sum = 0;
+    float sum = 0;
     for (int c = 0; c < channels; ++c) {
       sum += data[(n * channels + c) * spatial_dim + s];
     }
@@ -55,10 +55,10 @@ static __global__ void kernel_channel_sum(const int num, const int channels,
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_channel_div(const int count,
     const int num, const int channels,
-    const int spatial_dim, const Dtype* channel_sum, Dtype* data) {
+    const int spatial_dim, const float* channel_sum, float* data) {
   CUDA_KERNEL_LOOP(index, count) {
     int n = index / channels / spatial_dim;
     int s = index % spatial_dim;
@@ -66,14 +66,14 @@ static __global__ void kernel_channel_div(const int count,
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_channel_dot(const int num, const int channels,
-    const int spatial_dim, const Dtype* data_1, const Dtype* data_2,
-    Dtype* channel_dot) {
+    const int spatial_dim, const float* data_1, const float* data_2,
+    float* channel_dot) {
   CUDA_KERNEL_LOOP(index, num * spatial_dim) {
     int n = index / spatial_dim;
     int s = index % spatial_dim;
-    Dtype dot = 0;
+    float dot = 0;
     for (int c = 0; c < channels; ++c) {
       dot += (data_1[(n * channels + c) * spatial_dim + s]
           * data_2[(n * channels + c) * spatial_dim + s]);
@@ -82,12 +82,12 @@ static __global__ void kernel_channel_dot(const int num, const int channels,
   }
 }
 
-template <typename Dtype>
-void SoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,  const vector<Blob<Dtype>*>& top) 
+
+void SoftmaxLayer::Forward_gpu(const vector<Blob*>& bottom,  const vector<Blob*>& top) 
 {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
-  Dtype* scale_data = scale_.mutable_gpu_data();
+  const float* bottom_data = bottom[0]->gpu_data();
+  float* top_data = top[0]->mutable_gpu_data();
+  float* scale_data = scale_.mutable_gpu_data();
   
   int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -99,30 +99,30 @@ void SoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,  const
   
   caffe_copy(count, bottom_data, top_data);
 
-  kernel_channel_max<Dtype><<<CAFFE_GET_BLOCKS(num * height * width),CAFFE_CUDA_NUM_THREADS>>>
+  kernel_channel_max<<<CAFFE_GET_BLOCKS(num * height * width),CAFFE_CUDA_NUM_THREADS>>>
   (num, channels, height*width, top_data,scale_data);
   
-  kernel_channel_subtract<Dtype><<<CAFFE_GET_BLOCKS(count),CAFFE_CUDA_NUM_THREADS>>>
+  kernel_channel_subtract<<<CAFFE_GET_BLOCKS(count),CAFFE_CUDA_NUM_THREADS>>>
   (count, num, channels, height*width, scale_data, top_data);
   
-  kernel_exp<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>
+  kernel_exp<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>
   (count, top_data, top_data);
   
 
-  kernel_channel_sum<Dtype><<<CAFFE_GET_BLOCKS(num * height * width),CAFFE_CUDA_NUM_THREADS>>>
+  kernel_channel_sum<<<CAFFE_GET_BLOCKS(num * height * width),CAFFE_CUDA_NUM_THREADS>>>
   (num, channels, height*width, top_data,scale_data);
   
-  kernel_channel_div<Dtype><<<CAFFE_GET_BLOCKS(count),CAFFE_CUDA_NUM_THREADS>>>
+  kernel_channel_div<<<CAFFE_GET_BLOCKS(count),CAFFE_CUDA_NUM_THREADS>>>
   (count, num, channels, height*width, scale_data, top_data);   
 }
 
-template <typename Dtype>
-void SoftmaxLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void SoftmaxLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
-  const Dtype* top_diff = top[0]->gpu_diff();
-  const Dtype* top_data = top[0]->gpu_data();
-  Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
-  Dtype* scale_data = scale_.mutable_gpu_data();
+  const float* top_diff = top[0]->gpu_diff();
+  const float* top_data = top[0]->gpu_data();
+  float* bottom_diff = bottom[0]->mutable_gpu_diff();
+  float* scale_data = scale_.mutable_gpu_data();
   
   int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -133,20 +133,20 @@ void SoftmaxLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const ve
  
   caffe_copy(count, top_diff, bottom_diff);
 
-  kernel_channel_dot<Dtype><<<CAFFE_GET_BLOCKS(num * height * width),CAFFE_CUDA_NUM_THREADS>>>
+  kernel_channel_dot<<<CAFFE_GET_BLOCKS(num * height * width),CAFFE_CUDA_NUM_THREADS>>>
   (num, channels, height*width, top_diff, top_data, scale_data);
 
-  kernel_channel_subtract<Dtype><<<CAFFE_GET_BLOCKS(count),CAFFE_CUDA_NUM_THREADS>>>
+  kernel_channel_subtract<<<CAFFE_GET_BLOCKS(count),CAFFE_CUDA_NUM_THREADS>>>
   (count, num, channels, height*width, scale_data, bottom_diff);
   
-  caffe_gpu_mul<Dtype>(top[0]->count(), bottom_diff, top_data, bottom_diff);
+  caffe_gpu_mul(top[0]->count(), bottom_diff, top_data, bottom_diff);
 }
-template <typename Dtype>
-void SoftmaxLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom,  const vector<Blob<Dtype>*>& top) 
+
+void SoftmaxLayer::SecForward_gpu(const vector<Blob*>& bottom,  const vector<Blob*>& top) 
 {
 
 }
-INSTANTIATE_LAYER_GPU_FUNCS(SoftmaxLayer);
+
 
 
 }  // namespace caffe

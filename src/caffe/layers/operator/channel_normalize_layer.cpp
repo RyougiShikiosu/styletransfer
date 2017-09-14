@@ -3,8 +3,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ChannelNormalizeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ChannelNormalizeLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   
 
@@ -15,8 +15,8 @@ void ChannelNormalizeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom
   else
   {
     this->blobs_.resize(1);
-    this->blobs_[0].reset(new Blob<Dtype>(channels,1,1,1));
-    caffe_gpu_set(this->blobs_[0]->count(),Dtype(norm_param.scale_value()),this->blobs_[0]->mutable_gpu_data());
+    this->blobs_[0].reset(new Blob(channels,1,1,1));
+    caffe_gpu_set(this->blobs_[0]->count(),float(norm_param.scale_value()),this->blobs_[0]->mutable_gpu_data());
 
 		
 		if (this->layer_param_.param_size() == 0)
@@ -28,8 +28,8 @@ void ChannelNormalizeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom
   #endif
 }
 
-template <typename Dtype>
-void ChannelNormalizeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ChannelNormalizeLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -45,7 +45,7 @@ void ChannelNormalizeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, c
 }
 
 
-INSTANTIATE_CLASS(ChannelNormalizeLayer);
+
 REGISTER_LAYER_CLASS(ChannelNormalize);
 
 }  // namespace caffe

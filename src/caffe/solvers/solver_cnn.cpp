@@ -11,8 +11,8 @@
 namespace caffe {
 
 
-template <typename Dtype>
-SolverCNN<Dtype>::SolverCNN(const SolverParameter& param)
+
+SolverCNN::SolverCNN(const SolverParameter& param)
 {
   //---------------- initial train net -----------------------
   param_ = param;
@@ -20,11 +20,11 @@ SolverCNN<Dtype>::SolverCNN(const SolverParameter& param)
   ReadProtoFromTextFile(param_.net(), &net_param);
   
 
-  vector<shared_ptr<Blob<Dtype> > > net_intput_blobs; 
+  vector<shared_ptr<Blob > > net_intput_blobs; 
   net_intput_blobs.clear();
   vector<std::string> net_intput_blob_names; 
   net_intput_blob_names.clear();
-  net_.reset(new Net<Dtype>(net_param, net_intput_blobs, net_intput_blob_names));
+  net_.reset(new Net(net_param, net_intput_blobs, net_intput_blob_names));
   net_->set_NetOptimizer(param_.net_opt());
   
   this->iter_ = 0;
@@ -41,12 +41,13 @@ SolverCNN<Dtype>::SolverCNN(const SolverParameter& param)
   	
     net_intput_blobs.clear();
     net_intput_blob_names.clear();
-    test_net_.reset(new Net<Dtype>(net_param, net_intput_blobs, net_intput_blob_names));
+    test_net_.reset(new Net(net_param, net_intput_blobs, net_intput_blob_names));
+    this->share_weight(net_, test_net_);
   }
 }
 
-template <typename Dtype>
-void SolverCNN<Dtype>::Solve(const char* resume_file) 
+
+void SolverCNN::Solve(const char* resume_file) 
 {
   LOG(INFO) << "Solving " << net_->name();
 
@@ -65,7 +66,6 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
   if (param_.has_test_initialization() && param_.test_initialization())
   {
     //-------------- copy net-------------------
-    this->share_weight(net_, test_net_);
 		test_net_->BcastData();
     if (param_.eval_type() == "classification")
     	test();
@@ -80,21 +80,36 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
   while (this->iter_ < param_.max_iter())
   {
     net_->ClearParamDiffs();
-    Dtype loss = 0;
+    float loss = 0;
     
 
 		net_->BcastData();
     for (int i = 0; i < param_.iter_size(); ++i)
     {
-    	Caffe::set_reuse(false);
+    	
       loss  += net_->Forward();    
       Caffe::set_reuse(true);
       net_->Backward();
+			Caffe::set_reuse(false);
+//-------------
+#if 0
+      Caffe::set_gradient_penalty("Yes");
+      Caffe::set_frozen_param(true);
+			Caffe::set_reuse(false);    
+			net_->Backward();
+			Caffe::set_frozen_param(false);
+			
+			Caffe::set_second_pass(true);
+			net_->SecForward();
+			Caffe::set_second_pass(false);
+			Caffe::set_gradient_penalty("No");
+#endif			
+//-------------			
     }
 		net_->ReduceDiff();
-   	net_->ScaleDiff(Dtype(1)/Dtype(param_.iter_size()));	
+   	net_->ScaleDiff(float(1)/float(param_.iter_size()));	
 		
-		loss /= Dtype(param_.iter_size());	
+		loss /= float(param_.iter_size());	
     dispaly_loss(loss);
 			
  		
@@ -111,7 +126,6 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
 				Caffe::number_collect_sample = 0;
 				for (int i = 0; i < param_.accumulate_test_iter(); ++i)
 				{	
-					Caffe::set_reuse(true);
 					net_->Forward();
 					Caffe::number_collect_sample ++;
 				}	
@@ -120,7 +134,6 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
     	
     	LOG(INFO)<<"===== test the model ======";
 		//-------------- copy net-------------------
-			this->share_weight(net_, test_net_);
 			test_net_->BcastData(); 
       if (param_.eval_type() == "classification")
       	test();
@@ -140,7 +153,6 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
   	Caffe::number_collect_sample = 0;
   	for (int i = 0; i < param_.accumulate_max_iter(); ++i)
 		{	
-			Caffe::set_reuse(true);
 			net_->Forward();
 			Caffe::number_collect_sample ++;
 		}	
@@ -151,7 +163,6 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
   {
   	LOG(INFO)<<"===== test the model ======";
     //-------------- copy net-------------------
-    this->share_weight(net_, test_net_);
 		test_net_->BcastData();
     if (param_.eval_type() == "classification")
     	test();
@@ -167,8 +178,8 @@ void SolverCNN<Dtype>::Solve(const char* resume_file)
 }
 
 
-template <typename Dtype>
-void SolverCNN<Dtype>::dispaly_loss(Dtype loss) 
+
+void SolverCNN::dispaly_loss(float loss) 
 {
 	sum_loss_ += loss;
 	
@@ -178,8 +189,8 @@ void SolverCNN<Dtype>::dispaly_loss(Dtype loss)
   	sum_loss_ = 0;
   }
 }
-template <typename Dtype>
-void SolverCNN<Dtype>::test() 
+
+void SolverCNN::test() 
 {
 	Caffe::set_bn_state("frozen");
 	Caffe::set_drop_state("fixed");
@@ -207,8 +218,8 @@ void SolverCNN<Dtype>::test()
 	Caffe::set_reuse(false);
 }
 
-template <typename Dtype>
-void SolverCNN<Dtype>::testSegmentation() 
+
+void SolverCNN::testSegmentation() 
 {
 	Caffe::set_bn_state("frozen");
 	Caffe::set_drop_state("fixed");
@@ -216,7 +227,7 @@ void SolverCNN<Dtype>::testSegmentation()
 	
   LOG(INFO) << "Iteration " << this->iter_ << ", Testing net ";
   
-	shared_ptr<Blob<Dtype> > label_stat(new Blob<Dtype>());
+	shared_ptr<Blob > label_stat(new Blob());
 	
   for (int i = 0; i < param_.test_iter(); i++) 
   {
@@ -235,7 +246,7 @@ void SolverCNN<Dtype>::testSegmentation()
     else 
     {        
       caffe_axpy(test_net_->output_blobs()[0]->count(), 
-      					Dtype(1), test_net_->output_blobs()[0]->cpu_data(), 
+      					float(1), test_net_->output_blobs()[0]->cpu_data(), 
       					label_stat->mutable_cpu_data());
     }    
   }
@@ -244,11 +255,11 @@ void SolverCNN<Dtype>::testSegmentation()
  
   const int output_blob_index = test_net_->output_blob_indices()[0];
   const string& output_name = test_net_->blob_names()[output_blob_index];
-  const Dtype* label_stat_data = label_stat->cpu_data();
+  const float* label_stat_data = label_stat->cpu_data();
   const int channels = label_stat->channels();
   // get sum infomation
-  Dtype sum_gtpred = 0;
-  Dtype sum_gt = 0;
+  float sum_gtpred = 0;
+  float sum_gt = 0;
   for (int c = 0; c < channels; ++c) 
   {
     sum_gtpred += label_stat_data[c*3];
@@ -256,8 +267,8 @@ void SolverCNN<Dtype>::testSegmentation()
   }
   if (sum_gt > 0) 
   {
-    Dtype per_pixel_acc = sum_gtpred / sum_gt;
-    Dtype per_label_acc = 0, iou, iou_acc = 0, weighted_iou_acc = 0;
+    float per_pixel_acc = sum_gtpred / sum_gt;
+    float per_label_acc = 0, iou, iou_acc = 0, weighted_iou_acc = 0;
     int num_valid_labels = 0;
     for (int c = 0; c < channels; ++c) 
     {
@@ -289,8 +300,8 @@ void SolverCNN<Dtype>::testSegmentation()
 }
 
 ///------------------------------------------------ proto <->  memory------------------------------------------------------
-template <typename Dtype>
-void SolverCNN<Dtype>::Snapshot() 
+
+void SolverCNN::Snapshot() 
 {
 //------------------------------
 	NetParameter net_param;
@@ -313,8 +324,8 @@ void SolverCNN<Dtype>::Snapshot()
 //-----------------------------
 }
 
-template <typename Dtype>
-void SolverCNN<Dtype>::Restore(const char* state_file) 
+
+void SolverCNN::Restore(const char* state_file) 
 {
 	SolverState state;
 	ReadProtoFromBinaryFile(state_file, &state);
@@ -329,6 +340,6 @@ void SolverCNN<Dtype>::Restore(const char* state_file)
   //net_->RestoreState(state.net_state());
 }
 
-INSTANTIATE_CLASS(SolverCNN);
+
 
 }  // namespace caffe

@@ -12,23 +12,23 @@ namespace caffe {
 
 
 
-template <typename Dtype>
-class ParallelBatchNormLayer : public Layer<Dtype> 
+
+class ParallelBatchNormLayer : public Layer 
 {
  public:
-  explicit ParallelBatchNormLayer(const LayerParameter& param) : Layer<Dtype>(param) {}
+  explicit ParallelBatchNormLayer(const LayerParameter& param) : Layer(param) {}
   virtual ~ParallelBatchNormLayer();
   virtual inline const char* type() const { return "ParallelBatchNorm"; }
   
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,  const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-	virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,  const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+	virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
-	vector<Blob<Dtype> *> parallel_mean_buffer_;
-	vector<Blob<Dtype> *> parallel_var_buffer_;  
+	vector<Blob *> parallel_mean_buffer_;
+	vector<Blob *> parallel_var_buffer_;  
 };		
 
 }  // namespace caffe

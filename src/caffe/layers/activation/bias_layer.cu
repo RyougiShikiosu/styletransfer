@@ -5,8 +5,8 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
-template <typename Dtype>
-static __global__ void forward_kernel(const int count, const int channels, const int spatial_dim, const Dtype* in, const Dtype * b, Dtype* out) 
+
+static __global__ void forward_kernel(const int count, const int channels, const int spatial_dim, const float* in, const float * b, float* out) 
 {
   CUDA_KERNEL_LOOP(i, count) 
   {
@@ -15,10 +15,10 @@ static __global__ void forward_kernel(const int count, const int channels, const
   }
 }
 
-template <typename Dtype>
-static __global__ void backward_kernel_bias(int num, int channels, int spatial_dim,  const Dtype* top_diff, Dtype* b_diff) 
+
+static __global__ void backward_kernel_bias(int num, int channels, int spatial_dim,  const float* top_diff, float* b_diff) 
 {
-  __shared__ Dtype buffer[CAFFE_CUDA_NUM_THREADS];
+  __shared__ float buffer[CAFFE_CUDA_NUM_THREADS];
   const int tid = threadIdx.x;
   const int c = blockIdx.x;
 
@@ -46,8 +46,8 @@ static __global__ void backward_kernel_bias(int num, int channels, int spatial_d
     b_diff[c] += buffer[0];
   }
 }
-template <typename Dtype>
-void BiasLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BiasLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	
 	int num = bottom[0]->num();
@@ -55,13 +55,13 @@ void BiasLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vec
 	int height = bottom[0]->height();
 	int width = bottom[0]->width();
 	
-	forward_kernel<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+	forward_kernel<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(bottom[0]->count(), channels, height*width, bottom[0]->gpu_data(), this->blobs_[0]->gpu_data(), top[0]->mutable_gpu_data());
 	
 }
 
-template <typename Dtype>
-void BiasLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void BiasLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -76,8 +76,8 @@ void BiasLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vecto
 		(num, channels, height*width,  top[0]->gpu_diff(), this->blobs_[0]->mutable_gpu_diff()); 
 	}
 }
-template <typename Dtype>
-void BiasLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BiasLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -86,5 +86,5 @@ void BiasLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const 
 				
 	caffe_copy(bottom[0]->count(),bottom[0]->gpu_sec_diff(),top[0]->mutable_gpu_sec_diff());
 }
-INSTANTIATE_LAYER_GPU_FUNCS(BiasLayer);
+
 }  // namespace caffe

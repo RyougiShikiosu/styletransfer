@@ -118,7 +118,32 @@ void ReadImageToDatum(const string& filename, const bool is_color, const int lab
 	} 
 #endif
 }
+void ReadImageToDatumMultilabel(const string& filename, const bool is_color, const vector<int> label, const std::string & encoding, Datum* datum) 
+{
+	cv::Mat cv_img;
+	if (is_color)
+		 cv_img = cv::imread(filename+".jpg", CV_LOAD_IMAGE_COLOR);
+	else
+		 cv_img = cv::imread(filename, CV_LOAD_IMAGE_GRAYSCALE);
+		
+	if (!cv_img.data) LOG(FATAL)<<"image "<<filename<<" not found.";
+		
 
+	std::streampos size;	
+	fstream file(filename.c_str(), ios::in|ios::binary|ios::ate);
+	if (file.is_open()) 
+	{
+	  size = file.tellg();
+	  std::string buffer(size, ' ');
+	  file.seekg(0, ios::beg);
+	  file.read(&buffer[0], size);
+	  file.close();
+	  datum->set_data(buffer);
+	  for (int i=0;i<label.size();i++)
+	  	datum->add_multi_label(label[i]);
+	  datum->set_encoded(true);
+	} 
+}
 
 void WriteProtoToImage(const string& filename, const BlobProto& proto) {
   CHECK_EQ(proto.num(), 1);

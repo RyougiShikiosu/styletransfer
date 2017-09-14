@@ -12,6 +12,7 @@
 #include "caffe/solvers/solver_cnn.hpp"
 #include "caffe/solvers/solver_gan.hpp"
 #include "caffe/solvers/solver_sec_gan.hpp"
+#include "caffe/solvers/solver_aux_sec_gan.hpp"
 #include "caffe/util/benchmark.hpp"
 #include "caffe/util/io.hpp"
 

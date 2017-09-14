@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void BeGdLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void BeGdLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	
 	if (this->blobs_.size() > 0)
@@ -16,7 +16,7 @@ void BeGdLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const 
   {
    
     this->blobs_.resize(1);
-    this->blobs_[0].reset(new Blob<Dtype>(1,1,1,1));
+    this->blobs_[0].reset(new Blob(1,1,1,1));
     
     
 		this->blobs_[0]->mutable_cpu_data()[0] = 0.00001;//in case of zero gradients
@@ -29,8 +29,8 @@ void BeGdLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const 
   }
 }
 
-template <typename Dtype>
-void BeGdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BeGdLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -47,6 +47,6 @@ void BeGdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 }
 
 
-INSTANTIATE_CLASS(BeGdLossLayer);
+
 REGISTER_LAYER_CLASS(BeGdLoss);
 }  // namespace caffe

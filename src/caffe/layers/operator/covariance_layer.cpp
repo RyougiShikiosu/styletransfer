@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void CovarianceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void CovarianceLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void CovarianceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void CovarianceLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -23,6 +23,6 @@ void CovarianceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const v
 	top[0]->Reshape(num,channels*channels,1,1);
 }
 
-INSTANTIATE_CLASS(CovarianceLayer);
+
 REGISTER_LAYER_CLASS(Covariance);
 }  // namespace caffe

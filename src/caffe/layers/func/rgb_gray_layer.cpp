@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void RGBGRAYLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void RGBGRAYLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void RGBGRAYLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void RGBGRAYLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -24,6 +24,6 @@ void RGBGRAYLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 	top[0]->Reshape(num,1,height,width);
 }
 
-INSTANTIATE_CLASS(RGBGRAYLayer);
+
 REGISTER_LAYER_CLASS(RGBGRAY);
 }  // namespace caffe

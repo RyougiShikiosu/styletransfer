@@ -15,27 +15,27 @@ namespace caffe {
  *
  * TODO(dox): thorough documentation for Forward, Backward, and proto params.
  */
-template <typename Dtype>
-class EltwiseLayer : public Layer<Dtype> 
+
+class EltwiseLayer : public Layer 
 {
  public:
-  explicit EltwiseLayer(const LayerParameter& param) : Layer<Dtype>(param) {}
+  explicit EltwiseLayer(const LayerParameter& param) : Layer(param) {}
   virtual inline const char* type() const { return "Eltwise"; }
   
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top  , const vector<Blob<Dtype>*>& bottom);
-	virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top  , const vector<Blob*>& bottom);
+	virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
  protected:
 
 
   string op_;
-  vector<Dtype> coeffs_;
+  vector<float> coeffs_;
   vector<bool> backwards_;
   
-  Blob<int> max_idx_;
+  Blob max_idx_;
 
   bool stable_prod_grad_;
 };

@@ -6,45 +6,45 @@
 
 namespace caffe {
 
-template <typename Dtype>
-static __global__ void TanHForward(const int n, const Dtype* in, Dtype* out) {
+
+static __global__ void TanHForward(const int n, const float* in, float* out) {
   CUDA_KERNEL_LOOP(index, n) {
     out[index] = tanh(in[index]);
   }
 }
 
-template <typename Dtype>
-static __global__ void TanHBackward(const int n, const Dtype* in_diff,
-    const Dtype* out_data, Dtype* out_diff) {
+
+static __global__ void TanHBackward(const int n, const float* in_diff,
+    const float* out_data, float* out_diff) {
   CUDA_KERNEL_LOOP(index, n) {
-    Dtype tanhx = out_data[index];
+    float tanhx = out_data[index];
     out_diff[index] = in_diff[index] * (1 - tanhx * tanhx);
   }
 }
-template <typename Dtype>
-void TanHLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TanHLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-	const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
+	const float* bottom_data = bottom[0]->gpu_data();
+  float* top_data = top[0]->mutable_gpu_data();
   const int count = bottom[0]->count();
-  TanHForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>
+  TanHForward<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>
   (count, bottom_data, top_data);
 }
 
-template <typename Dtype>
-void TanHLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void TanHLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 
-  const Dtype* top_data = top[0]->gpu_data();
-  const Dtype* top_diff = top[0]->gpu_diff();
-  Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+  const float* top_data = top[0]->gpu_data();
+  const float* top_diff = top[0]->gpu_diff();
+  float* bottom_diff = bottom[0]->mutable_gpu_diff();
   const int count = bottom[0]->count();
-  TanHBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>
+  TanHBackward<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>
   (count, top_diff, top_data, bottom_diff);
 }
-template <typename Dtype>
-void TanHLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TanHLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(TanHLayer);
+;
 }  // namespace caffe

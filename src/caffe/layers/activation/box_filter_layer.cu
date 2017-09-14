@@ -6,8 +6,8 @@
 namespace caffe {
 
 
-template <typename Dtype>
-void BoxFilterLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BoxFilterLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -19,8 +19,8 @@ void BoxFilterLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, cons
 
 }
 
-template <typename Dtype>
-void BoxFilterLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void BoxFilterLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -30,12 +30,11 @@ void BoxFilterLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const 
 	box_filter_gpu(num,channels,height,width,radius,top[0]->gpu_diff(),bottom[0]->mutable_gpu_diff(),buffer_.mutable_gpu_data());
 }
 
-template <typename Dtype>
-void BoxFilterLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BoxFilterLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(BoxFilterLayer);
 }  // namespace caffe
 		

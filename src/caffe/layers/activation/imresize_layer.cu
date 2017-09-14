@@ -6,8 +6,8 @@
 namespace caffe {
 
 
-template <typename Dtype>
-static __global__ void resize_2_kernel(int count,int stride,int kernel_size,int channels,int height, int width,const Dtype * in, Dtype * out_0, Dtype *out_1)
+
+static __global__ void resize_2_kernel(int count,int stride,int kernel_size,int channels,int height, int width,const float * in, float * out_0, float *out_1)
 {
   CUDA_KERNEL_LOOP(index, count)
   {
@@ -22,7 +22,7 @@ static __global__ void resize_2_kernel(int count,int stride,int kernel_size,int 
   	int wstart = max(w * stride - pad,0);
   	int wend = min(w * stride  -pad + kernel_size,width*stride);
   	
-  	Dtype hist[21];
+  	float hist[21];
   	for(int c=0;c<channels;c++)	
   		hist[c] = 0;
   	for(int ih = hstart;ih<hend;ih++)
@@ -30,11 +30,11 @@ static __global__ void resize_2_kernel(int count,int stride,int kernel_size,int 
   		{ 	
   			int cur_ind = (n * stride*height + ih) * stride*width + iw;  						
   			if (in[cur_ind] >= 0 && in[cur_ind] < channels)// never use != , please try < or > instread...
-  				hist[int(in[cur_ind])] += (1 - abs(Dtype(ih - (h * stride + 0.5)))/Dtype(stride)) * (1 - abs(Dtype(iw - (w * stride + 0.5)))/Dtype(stride));
+  				hist[int(in[cur_ind])] += (1 - abs(float(ih - (h * stride + 0.5)))/float(stride)) * (1 - abs(float(iw - (w * stride + 0.5)))/float(stride));
   		}
-  	Dtype max_value = -1;
-  //	Dtype max_index = -1;
-  	Dtype sum = 0;
+  	float max_value = -1;
+  //	float max_index = -1;
+  	float sum = 0;
   	for(int c=0;c<channels;c++)
   	{
   		sum += hist[c];
@@ -60,8 +60,8 @@ static __global__ void resize_2_kernel(int count,int stride,int kernel_size,int 
   }
 }    
 
-template <typename Dtype>
-static __global__ void resize_1_kernel(int count,int stride,int kernel_size,int channels,int height, int width,const Dtype * in, Dtype * out_0)
+
+static __global__ void resize_1_kernel(int count,int stride,int kernel_size,int channels,int height, int width,const float * in, float * out_0)
 {
   CUDA_KERNEL_LOOP(index, count)
   {
@@ -76,20 +76,20 @@ static __global__ void resize_1_kernel(int count,int stride,int kernel_size,int 
   	int wstart = max(w * stride - pad,0);
   	int wend = min(w * stride  -pad + kernel_size,width*stride);
   	
-  	Dtype hist[21];
+  	float hist[21];
   	for(int c=0;c<channels;c++)	
   		hist[c] = 0;
-  	Dtype count = 0;
+  	float count = 0;
   	for(int ih = hstart;ih<hend;ih++)
   		for(int iw = wstart;iw<wend;iw++)
   		{ 	
   			int cur_ind = (n * stride*height + ih) * stride*width + iw;  						
   			if (in[cur_ind] >= 0 && in[cur_ind] < channels)// never use != , please try < or > instread...
-  				hist[int(in[cur_ind])] += (1 - abs(Dtype(ih - (h * stride + 0.5)))/Dtype(stride)) * (1 - abs(Dtype(iw - (w * stride + 0.5)))/Dtype(stride));
-  			count += (1 - abs(Dtype(ih - (h * stride + 0.5)))/Dtype(stride)) * (1 - abs(Dtype(iw - (w * stride + 0.5)))/Dtype(stride));;
+  				hist[int(in[cur_ind])] += (1 - abs(float(ih - (h * stride + 0.5)))/float(stride)) * (1 - abs(float(iw - (w * stride + 0.5)))/float(stride));
+  			count += (1 - abs(float(ih - (h * stride + 0.5)))/float(stride)) * (1 - abs(float(iw - (w * stride + 0.5)))/float(stride));;
   		}
-  	Dtype max_value = -1;
-  	Dtype max_index = -1;
+  	float max_value = -1;
+  	float max_index = -1;
   	for(int c=0;c<channels;c++)
   	{
   		if (hist[c]>max_value)
@@ -105,32 +105,32 @@ static __global__ void resize_1_kernel(int count,int stride,int kernel_size,int 
  	}		
 }    
 
-template <typename Dtype>
-void ImresizeLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ImresizeLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = top[0]->num();
   int height = top[0]->height();
   int width = top[0]->width();
   if (top.size() == 2)
-		resize_2_kernel<Dtype><<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
+		resize_2_kernel<<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
 		 (num*height*width,stride,kernel_size,num_classes,height,width,bottom[0]->gpu_data(),top[0]->mutable_gpu_data(),top[1]->mutable_gpu_data());
 	else if (top.size() == 1)
-		resize_1_kernel<Dtype><<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
+		resize_1_kernel<<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
 		 (num*height*width,stride,kernel_size,num_classes,height,width,bottom[0]->gpu_data(),top[0]->mutable_gpu_data());
    
   
 }
 
-template <typename Dtype>
-void ImresizeLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ImresizeLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 
 }
-template <typename Dtype>
-void ImresizeLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ImresizeLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ImresizeLayer);
+
 }  // namespace caffe
 		

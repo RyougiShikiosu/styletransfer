@@ -12,21 +12,21 @@
 namespace caffe {
 
 
-template <typename Dtype>
-class CuDNNConvolutionLayer : public ConvolutionLayer<Dtype> 
+
+class CuDNNConvolutionLayer : public ConvolutionLayer 
 {
  public:
-  explicit CuDNNConvolutionLayer(const LayerParameter& param) : ConvolutionLayer<Dtype>(param), handles_setup_(false) {}
+  explicit CuDNNConvolutionLayer(const LayerParameter& param) : ConvolutionLayer(param), handles_setup_(false) {}
   virtual ~CuDNNConvolutionLayer();
 	virtual inline const char* type() const { return "CuDNNConvolution"; }
 
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,   const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top,   const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
   
 
@@ -50,12 +50,13 @@ class CuDNNConvolutionLayer : public ConvolutionLayer<Dtype>
   size_t workspace_bwd_data_sizes_;
   size_t workspace_bwd_filter_sizes_;
 
-	vector<Blob<Dtype> *> myworkspace_;
+	vector<Blob *> myworkspace_;
 	
 	int iter_;
-	Blob<Dtype> v_blob_;
-	Blob<Dtype> m_blob_;
-	Blob<Dtype> buffer_blob_;
+	Blob v_blob_;
+	Blob m_blob_;
+	Blob buffer_blob_;
+	
 };
 
 

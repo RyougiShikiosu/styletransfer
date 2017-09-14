@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void PadImageLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void PadImageLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	pad_ = this->layer_param_.convolution_param().pad();
 }
 
-template <typename Dtype>
-void PadImageLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void PadImageLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -25,6 +25,6 @@ void PadImageLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 	top[0]->Reshape(num,channels,height+2*pad_,width+2*pad_);
 }
 
-INSTANTIATE_CLASS(PadImageLayer);
+
 REGISTER_LAYER_CLASS(PadImage);
 }  // namespace caffe

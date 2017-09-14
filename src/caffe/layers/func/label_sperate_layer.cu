@@ -6,8 +6,8 @@
 namespace caffe {
 
 
-template <typename Dtype>
-void LabelSperateLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void LabelSperateLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 		int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -84,15 +84,15 @@ void LabelSperateLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, c
 #endif
 }
 
-template <typename Dtype>
-void LabelSperateLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void LabelSperateLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	
 }
-template <typename Dtype>
-void LabelSperateLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void LabelSperateLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(LabelSperateLayer);
+
 }  // namespace caffe
 		

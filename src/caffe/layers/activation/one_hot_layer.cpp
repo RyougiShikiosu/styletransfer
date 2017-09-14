@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void OneHotLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void OneHotLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	classes_ = this->layer_param_.noise_param().classes();
 }
 
-template <typename Dtype>
-void OneHotLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void OneHotLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -23,6 +23,6 @@ void OneHotLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vecto
 	top[0]->Reshape(num,classes_,height,width);
 }
 
-INSTANTIATE_CLASS(OneHotLayer);
+
 REGISTER_LAYER_CLASS(OneHot);
 }  // namespace caffe

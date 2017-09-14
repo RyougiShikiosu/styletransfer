@@ -5,13 +5,13 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SplitLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void SplitLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 }
 
-template <typename Dtype>
-void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SplitLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   CHECK_GE(top.size(),1);
 	
@@ -20,7 +20,7 @@ void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector
 }
 
 
-INSTANTIATE_CLASS(SplitLayer);
+
 REGISTER_LAYER_CLASS(Split);
 
 }  // namespace caffe

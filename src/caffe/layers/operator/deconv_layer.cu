@@ -9,13 +9,13 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void DeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*> &top) 
+
+void DeConvolutionLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*> &top) 
 {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
-  Dtype* col_data = col_buffer_->mutable_gpu_data();
-  const Dtype* weight = this->blobs_[0]->gpu_data();
+  const float* bottom_data = bottom[0]->gpu_data();
+  float* top_data = top[0]->mutable_gpu_data();
+  float* col_data = col_buffer_->mutable_gpu_data();
+  const float* weight = this->blobs_[0]->gpu_data();
   
   int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -31,9 +31,9 @@ void DeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, 
   {
   	for (int g = 0; g < group_; g++) 
   	{
-		  caffe_gpu_gemm<Dtype>(CblasTrans, CblasNoTrans, kernel_size_*kernel_size_*num_output_/group_, height*width,  channels/group_,
-														(Dtype)1., weight + weight_offset_ * g, bottom_data + bottom[0]->offset(n) + bottom_offset_ * g,
-														(Dtype)0., col_data + col_offset_ * g);
+		  caffe_gpu_gemm(CblasTrans, CblasNoTrans, kernel_size_*kernel_size_*num_output_/group_, height*width,  channels/group_,
+														(float)1., weight + weight_offset_ * g, bottom_data + bottom[0]->offset(n) + bottom_offset_ * g,
+														(float)0., col_data + col_offset_ * g);
   	}
 
  		
@@ -45,15 +45,15 @@ void DeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, 
   
     if (this->layer_param_.convolution_param().bias_term()) 
     {
-      caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,height_out_*width_out_, 1, 
-													(Dtype)1., this->blobs_[1]->gpu_data(), bias_multiplier_->gpu_data(),
-													(Dtype)1., top_data + top[0]->offset(n));
+      caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, num_output_,height_out_*width_out_, 1, 
+													(float)1., this->blobs_[1]->gpu_data(), bias_multiplier_->gpu_data(),
+													(float)1., top_data + top[0]->offset(n));
     }      
   }     
 }
 
-template <typename Dtype>
-void DeConvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void DeConvolutionLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -63,19 +63,19 @@ void DeConvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, co
 	if (this->layer_param_.convolution_param().bias_term())
   {
     bias_multiplier_->Reshape(1,1,height_out_,width_out_);
-    caffe_gpu_set(bias_multiplier_->count(),Dtype(1),bias_multiplier_->mutable_gpu_data());  
+    caffe_gpu_set(bias_multiplier_->count(),float(1),bias_multiplier_->mutable_gpu_data());  
   }
   col_buffer_->Reshape(kernel_size_*kernel_size_*num_output_, height*width, 1, 1);
 //-------------------------------------------------------------------------
 
-  const Dtype* top_diff = top[0]->gpu_diff();
-  const Dtype* weight = this->blobs_[0]->gpu_data();
-  const Dtype* bottom_data = bottom[0]->gpu_data();
+  const float* top_diff = top[0]->gpu_diff();
+  const float* weight = this->blobs_[0]->gpu_data();
+  const float* bottom_data = bottom[0]->gpu_data();
   
-  Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
-  Dtype* weight_diff = this->blobs_[0]->mutable_gpu_diff();
-  Dtype* col_data = col_buffer_->mutable_gpu_data();
-  Dtype* col_diff = col_buffer_->mutable_gpu_diff();
+  float* bottom_diff = bottom[0]->mutable_gpu_diff();
+  float* weight_diff = this->blobs_[0]->mutable_gpu_diff();
+  float* col_data = col_buffer_->mutable_gpu_data();
+  float* col_diff = col_buffer_->mutable_gpu_diff();
 
 
 
@@ -87,12 +87,12 @@ void DeConvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, co
 
 	if (this->layer_param_.convolution_param().bias_term() && this->lr_mult()[1] != 0) 
 	{
-		Dtype* bias_diff = this->blobs_[1]->mutable_gpu_diff();
+		float* bias_diff = this->blobs_[1]->mutable_gpu_diff();
 		for (int n = 0; n < num; ++n)  
 		{
-			caffe_gpu_gemv<Dtype>(CblasNoTrans, num_output_, height_out_ * width_out_, 
-														(Dtype)1., top_diff + top[0]->offset(n), bias_multiplier_->gpu_data(), 
-														(Dtype)1., bias_diff);
+			caffe_gpu_gemv(CblasNoTrans, num_output_, height_out_ * width_out_, 
+														(float)1., top_diff + top[0]->offset(n), bias_multiplier_->gpu_data(), 
+														(float)1., bias_diff);
 		}
 	}
 	
@@ -106,9 +106,9 @@ void DeConvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, co
 		
 			for (int g = 0; g < group_; ++g) 
 			{
-				caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans, channels/group_,  kernel_size_*kernel_size_*num_output_/group_, height*width,
-															(Dtype)1., bottom_data + bottom[0]->offset(n) + bottom_offset_ * g, col_diff + col_offset_ * g, 
-															(Dtype)1., weight_diff + weight_offset_ * g);
+				caffe_gpu_gemm(CblasNoTrans, CblasTrans, channels/group_,  kernel_size_*kernel_size_*num_output_/group_, height*width,
+															(float)1., bottom_data + bottom[0]->offset(n) + bottom_offset_ * g, col_diff + col_offset_ * g, 
+															(float)1., weight_diff + weight_offset_ * g);
 			}												
 		}
 	}
@@ -121,16 +121,16 @@ void DeConvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, co
     
     for (int g = 0; g < group_; ++g) 
   	{
-		  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, channels/group_, height*width, kernel_size_*kernel_size_*num_output_/group_,
-														(Dtype)1., weight + weight_offset_ * g, col_diff + col_offset_ * g,
-														(Dtype)0., bottom_diff + bottom[0]->offset(n) + bottom_offset_ * g);
+		  caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, channels/group_, height*width, kernel_size_*kernel_size_*num_output_/group_,
+														(float)1., weight + weight_offset_ * g, col_diff + col_offset_ * g,
+														(float)0., bottom_diff + bottom[0]->offset(n) + bottom_offset_ * g);
 		}												
   }    
 }
-template <typename Dtype>
-void DeConvolutionLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*> &top) 
+
+void DeConvolutionLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*> &top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(DeConvolutionLayer);
+
 
 }  // namespace caffe

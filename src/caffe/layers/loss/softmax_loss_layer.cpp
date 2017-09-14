@@ -7,12 +7,12 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SoftmaxWithLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SoftmaxWithLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   LayerParameter softmax_param(this->layer_param_);
   softmax_param.set_type("Softmax");
-  softmax_layer_ = LayerRegistry<Dtype>::CreateLayer(softmax_param);
+  softmax_layer_ = LayerRegistry::CreateLayer(softmax_param);
   softmax_bottom_vec_.clear();
   softmax_bottom_vec_.push_back(bottom[0]);
   softmax_top_vec_.clear();
@@ -25,8 +25,8 @@ void SoftmaxWithLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   
 }
 
-template <typename Dtype>
-void SoftmaxWithLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SoftmaxWithLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	//CHECK_EQ(bottom.size(),2);
 	CHECK_EQ(bottom[1]->channels(),1);
@@ -41,7 +41,7 @@ void SoftmaxWithLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, co
 }
 
 
-INSTANTIATE_CLASS(SoftmaxWithLossLayer);
+
 REGISTER_LAYER_CLASS(SoftmaxWithLoss);
 
 }  // namespace caffe

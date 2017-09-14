@@ -10,8 +10,8 @@ namespace caffe {
 using std::min;
 using std::max;
 
-template <typename Dtype>
-void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void PoolingLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (this->layer_param_.pooling_param().global_pool() == false)
 	{
@@ -21,8 +21,8 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const v
 	}	
 }
 
-template <typename Dtype>
-void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void PoolingLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -50,7 +50,7 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 
 
 
-INSTANTIATE_CLASS(PoolingLayer);
+
 REGISTER_LAYER_CLASS(Pooling);
 
 }  // namespace caffe

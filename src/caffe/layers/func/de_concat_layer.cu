@@ -5,9 +5,9 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
-template <typename Dtype>
+
 static __global__ void deconcat_forward(int count,int channels, int i_channels, int cur_channels,int spatial_dim,
-																const Dtype * b, Dtype *a)
+																const float * b, float *a)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -19,9 +19,9 @@ static __global__ void deconcat_forward(int count,int channels, int i_channels, 
 	}
 }
 
-template <typename Dtype>
+
 static __global__ void deconcat_backward(int count,int channels, int i_channels, int cur_channels,int spatial_dim,
-																const Dtype *a, Dtype *b)
+																const float *a, float *b)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -33,8 +33,8 @@ static __global__ void deconcat_backward(int count,int channels, int i_channels,
 	}
 }
 
-template <typename Dtype>
-void DeConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void DeConcatLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -45,15 +45,15 @@ void DeConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const
 	for (int i =0; i < top.size();i++)
 	{
 		int i_channels = top[i]->channels();
-		deconcat_forward<Dtype><<<CAFFE_GET_BLOCKS(top[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		deconcat_forward<<<CAFFE_GET_BLOCKS(top[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(top[i]->count(),channels,i_channels,cur_channels,height*width,
 					bottom[0]->gpu_data(), top[i]->mutable_gpu_data());		
 		cur_channels += i_channels;
 	}
 }
 
-template <typename Dtype>
-void DeConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void DeConcatLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -64,15 +64,15 @@ void DeConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const v
 	for (int i =0; i < top.size();i++)
 	{
 		int i_channels = top[i]->channels();
-		deconcat_backward<Dtype><<<CAFFE_GET_BLOCKS(top[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		deconcat_backward<<<CAFFE_GET_BLOCKS(top[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(top[i]->count(),channels,i_channels,cur_channels,height*width,
 					top[i]->gpu_diff(), bottom[0]->mutable_gpu_diff());		
 		cur_channels += i_channels;
 	}
 }
-template <typename Dtype>
-void DeConcatLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void DeConcatLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(DeConcatLayer);
+
 }  // namespace caffe

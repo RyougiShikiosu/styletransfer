@@ -5,20 +5,20 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ELULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ELULayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 
 }
 
 
-template <typename Dtype>
-void ELULayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ELULayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
   top[0]->ReshapeLike(*bottom[0]);
 }
 
-INSTANTIATE_CLASS(ELULayer);
+
 REGISTER_LAYER_CLASS(ELU);
 
 }  // namespace caffe

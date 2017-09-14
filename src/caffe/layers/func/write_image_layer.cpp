@@ -6,18 +6,18 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void WriteImageLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void WriteImageLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 }
 
-template <typename Dtype>
-void WriteImageLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void WriteImageLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
 
 
-INSTANTIATE_CLASS(WriteImageLayer);
+
 REGISTER_LAYER_CLASS(WriteImage);
 }  // namespace caffe

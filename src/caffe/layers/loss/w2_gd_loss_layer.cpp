@@ -6,13 +6,13 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void W2GdLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void W2GdLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 }
 
-template <typename Dtype>
-void W2GdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void W2GdLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	CHECK_EQ(bottom.size(),2);
 	
@@ -58,6 +58,6 @@ void W2GdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 }
 
 
-INSTANTIATE_CLASS(W2GdLossLayer);
+
 REGISTER_LAYER_CLASS(W2GdLoss);
 }  // namespace caffe

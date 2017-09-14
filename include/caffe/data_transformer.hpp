@@ -14,7 +14,7 @@ namespace caffe {
  * @brief Applies common transformations to the input data, such as
  * scaling, mirroring, substracting the image mean...
  */
-template <typename Dtype>
+
 class DataTransformer {
 public:
 	explicit DataTransformer(const TransformationParameter& param);
@@ -24,19 +24,16 @@ public:
 
 
 
-	void Transform(const cv::Mat& cv_img, Blob<Dtype>* transformed_blob);
-	void Transformsimple(const cv::Mat& cv_img, Blob<Dtype>* transformed_blob);
+	void Transform(const cv::Mat& cv_img, Blob* transformed_blob);
+	void Transformsimple(const cv::Mat& cv_img, Blob* transformed_blob);
 	void TransformImgAndSeg(const std::vector<cv::Mat>& cv_img_seg,
-													Blob<Dtype>* transformed_data_blob, Blob<Dtype>* transformed_label_blob,
+													Blob* transformed_data_blob, Blob* transformed_label_blob,
 													const int ignore_label);
 	void TransformGan(const std::vector<cv::Mat>& cv_img_seg,
-													Blob<Dtype>* transformed_data_blob, Blob<Dtype>* transformed_label_blob,
+													Blob* transformed_data_blob, Blob* transformed_label_blob,
 													const int ignore_label);												
-	//void TransformSegLabel(const std::vector<cv::Mat>& cv_img_seg,
-	//												Blob<Dtype>* transformed_data_blob, Blob<Dtype>* transformed_label_blob,
-	//												const int ignore_label);
 
-	void TransformParse(const cv::Mat& cv_img, std::vector<Dtype> label, Blob<Dtype>* transformed_blob,Blob<Dtype>* transformed_label);
+	void TransformParse(const cv::Mat& cv_img, std::vector<float> label, Blob* transformed_blob,Blob* transformed_label);
 
 
 protected:
@@ -47,8 +44,8 @@ protected:
 	TransformationParameter param_;
 
 
-	Blob<Dtype> data_mean_;
-	vector<Dtype> mean_values_;
+	Blob data_mean_;
+	vector<float> mean_values_;
 };
 
 }  // namespace caffe

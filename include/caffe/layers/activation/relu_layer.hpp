@@ -10,30 +10,30 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class ReLULayer : public Layer<Dtype> 
+
+class ReLULayer : public Layer 
 {
  public:
 
-  explicit ReLULayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit ReLULayer(const LayerParameter& param): Layer(param) {}
       
 	
 	
   virtual inline const char* type() const { return "ReLU"; }
   
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
  
   
-  Dtype negative_slope;
+  float negative_slope;
 
  	int gpu_id_;
   
-  Blob<bool> flag;
+  Blob flag;
 };
 
 }  // namespace caffe

@@ -7,10 +7,10 @@
 namespace caffe {
 
 
-template <typename Dtype>
-void ConcatNumLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ConcatNumLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-	Dtype * top_data = top[0]->mutable_gpu_data();
+	float * top_data = top[0]->mutable_gpu_data();
 	caffe_copy(bottom[0]->count(),bottom[0]->gpu_data(),top_data);
 	top_data += bottom[0]->count();
 
@@ -21,10 +21,10 @@ void ConcatNumLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, cons
 		caffe_copy(bottom[2]->count(),bottom[2]->gpu_data(),top_data);
 }
 
-template <typename Dtype>
-void ConcatNumLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ConcatNumLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
-	const Dtype * top_diff = top[0]->mutable_gpu_diff();
+	const float * top_diff = top[0]->mutable_gpu_diff();
 	
 	caffe_copy(bottom[0]->count(),top_diff,bottom[0]->mutable_gpu_diff());
 	top_diff += bottom[0]->count();
@@ -35,10 +35,10 @@ void ConcatNumLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const 
 	if (bottom.size() == 3)
 		caffe_copy(bottom[2]->count(),top_diff,bottom[2]->mutable_gpu_diff());
 }
-template <typename Dtype>
-void ConcatNumLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ConcatNumLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-	Dtype * top_sec_diff = top[0]->mutable_gpu_sec_diff();
+	float * top_sec_diff = top[0]->mutable_gpu_sec_diff();
 	caffe_copy(bottom[0]->count(),bottom[0]->gpu_sec_diff(),top_sec_diff);
 	top_sec_diff += bottom[0]->count();
 
@@ -48,5 +48,5 @@ void ConcatNumLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, c
 	if (bottom.size() == 3)
 		caffe_copy(bottom[2]->count(),bottom[2]->gpu_sec_diff(),top_sec_diff);
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ConcatNumLayer);
+
 }  // namespace caffe

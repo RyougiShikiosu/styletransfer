@@ -6,14 +6,14 @@
 namespace caffe {
 
 
-template <typename Dtype>
-void ShortcutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ShortcutLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
  
 }	
 
-template <typename Dtype>
-void ShortcutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ShortcutLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   if (bottom[0]->height() != bottom[1]->height() )
     LOG(FATAL)<<"wrong size";
@@ -25,12 +25,11 @@ void ShortcutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
   
   top[0]->ReshapeLike(*bottom[0]);
 }
-template <typename Dtype>
-ShortcutLayer<Dtype>::~ShortcutLayer()
+
+ShortcutLayer::~ShortcutLayer()
 {
 }
 
 
-INSTANTIATE_CLASS(ShortcutLayer);
 REGISTER_LAYER_CLASS(Shortcut);
 }  // namespace caffe

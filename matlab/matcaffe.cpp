@@ -86,11 +86,7 @@ static mxArray* do_forward(const mxArray* const hNet,const mxArray* const bottom
 
 		mexPrintf("num = %d, channels = %d, height = %d, width = %d\n",input_blobs[i]->num(),input_blobs[i]->channels(),input_blobs[i]->height(),input_blobs[i]->width());
     const float* const data_ptr = reinterpret_cast<const float* const>(mxGetPr(elem));
-		#ifdef CPU_ONLY
-      caffe_copy(input_blobs[i]->count(), data_ptr, input_blobs[i]->mutable_cpu_data());
-    #else
-      caffe_copy(input_blobs[i]->count(), data_ptr, input_blobs[i]->mutable_gpu_data());
-		#endif
+    caffe_copy(input_blobs[i]->count(), data_ptr, input_blobs[i]->mutable_gpu_data());
   }
 
   
@@ -105,11 +101,7 @@ static mxArray* do_forward(const mxArray* const hNet,const mxArray* const bottom
     mxArray* mx_blob =  mxCreateNumericArray(4, dims, mxSINGLE_CLASS, mxREAL);
     mxSetCell(mx_out, i, mx_blob);
     float* data_ptr = reinterpret_cast<float*>(mxGetPr(mx_blob));
-		#ifdef CPU_ONLY
-      caffe_copy(output_blobs[i]->count(), output_blobs[i]->cpu_data(), data_ptr);
-		#else
-      caffe_copy(output_blobs[i]->count(), output_blobs[i]->gpu_data(), data_ptr);
-		#endif
+    caffe_copy(output_blobs[i]->count(), output_blobs[i]->gpu_data(), data_ptr);
   }
 
   return mx_out;
@@ -184,11 +176,7 @@ static mxArray* do_get_weights(const mxArray* const hNet)
       mxSetCell(mx_layer_cells, j, mx_weights);
       float* weights_ptr = reinterpret_cast<float*>(mxGetPr(mx_weights));
 
-			#ifdef CPU_ONLY
-        caffe_copy(layer_blobs[j]->count(), layer_blobs[j]->cpu_data(), weights_ptr);
-			#else
-        caffe_copy(layer_blobs[j]->count(), layer_blobs[j]->gpu_data(),weights_ptr);
-			#endif          
+      caffe_copy(layer_blobs[j]->count(), layer_blobs[j]->gpu_data(),weights_ptr);        
     }
   }
    
@@ -232,22 +220,33 @@ static void init(MEX_ARGS)
   char* weight_file = mxArrayToString(prhs[1]);
 
 
-
-
-  Caffe::set_bn_state(FROZEN);
-	Caffe::set_drop_state(FIXED);
-
-
 	shared_ptr<Net<float> > net_;
 	NetParameter net_param;
   ReadProtoFromTextFile(string(model_file), &net_param);
-  vector<shared_ptr<Blob<float> > > net_intput_blobs; 
-	net_intput_blobs.clear();
-	vector<std::string> net_intput_blob_names; 
-	net_intput_blob_names.clear();
-  net_.reset(new Net<float>(net_param,net_intput_blobs,net_intput_blob_names));;
+  vector<shared_ptr<Blob<float> > > net_input_blobs;
+  net_input_blobs.clear();
+  vector<string> net_input_blob_names;
+  net_input_blob_names.clear();
+  for (int i = 0; i < net_param.input_blob_size(); ++i)
+  {
+    const string& blob_name = net_param.input_blob(i).name();
+    net_input_blob_names.push_back(blob_name);
+    
+    int num = net_param.input_blob(i).num();
+    int channels = net_param.input_blob(i).channels();
+    int height = net_param.input_blob(i).height();
+    int width = net_param.input_blob(i).width();
+    shared_ptr<Blob<float> > blob_pointer(new Blob<float>(num, channels, height, width));
+    net_input_blobs.push_back(blob_pointer);
+  }
   
-
+  Caffe::set_bn_state("frozen");
+	Caffe::set_drop_state("fixed");
+	Caffe::set_reuse(true);
+	
+	
+  net_.reset(new Net<float>(net_param,net_input_blobs,net_input_blob_names));
+  
   
   net_param.Clear();
   ReadProtoFromBinaryFile(weight_file, &net_param);

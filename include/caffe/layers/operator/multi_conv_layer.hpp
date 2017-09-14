@@ -10,23 +10,23 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class MultiConvolutionLayer : public Layer<Dtype> 
+
+class MultiConvolutionLayer : public Layer 
 {
  public:
-  explicit MultiConvolutionLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit MultiConvolutionLayer(const LayerParameter& param): Layer(param) {}
 	virtual ~MultiConvolutionLayer();
   virtual inline const char* type() const { return "MultiConvolution"; }
   
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
 
 
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
       
       
  protected:
@@ -46,9 +46,9 @@ class MultiConvolutionLayer : public Layer<Dtype>
 	int width_out_;
 
 //------------------------------------------	
-	Blob<Dtype> * col_buffer_;
-	Blob<Dtype> * bias_multiplier_;
-	Blob<Dtype> * buffer_top_;
+	Blob * col_buffer_;
+	Blob * bias_multiplier_;
+	Blob * buffer_top_;
 	int gpu_id_;
 //------------------------------------------	
 };

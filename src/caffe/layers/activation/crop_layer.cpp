@@ -5,14 +5,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void CropLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	pad_ = this->layer_param_.convolution_param().pad();
 }
 
-template <typename Dtype>
-void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void CropLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -23,7 +23,7 @@ void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<
 	top[0]->Reshape(num,channels,height-pad_*2,width-pad_*2);
 }
 
-INSTANTIATE_CLASS(CropLayer);
+
 REGISTER_LAYER_CLASS(Crop);
 }  // namespace caffe
 		

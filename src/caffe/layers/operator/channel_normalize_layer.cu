@@ -1,12 +1,12 @@
 #include <vector>
 #include "caffe/layers/operator/channel_normalize_layer.hpp"
-#define BN_EPS Dtype(1e-5)
+#define BN_EPS float(1e-5)
 
 namespace caffe {
 //---------------------------------------------------
 #if 0
-template <typename Dtype>
-static __global__ void compute_norm(int count, int channels, const Dtype *in, Dtype *norm)
+
+static __global__ void compute_norm(int count, int channels, const float *in, float *norm)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
@@ -14,15 +14,15 @@ static __global__ void compute_norm(int count, int channels, const Dtype *in, Dt
 		int n = i / spatial_dim;
 		int s = i % spatial_dim;
 		
-		Dtype sum = 0;
+		float sum = 0;
 		for (int c=0; c<channels; c++)
 			sum += in[(n*channels+c)*spatial_dim+s]*in[(n*channels+c)*spatial_dim+s];
-		sum /= Dtype(channels);	
+		sum /= float(channels);	
 		norm[i] = sqrt(sum+BN_EPS);
 	}
 }
-template <typename Dtype>
-static __global__ void forward_kernel(int count, int channels, const Dtype *in, const Dtype *norm, Dtype * out)
+
+static __global__ void forward_kernel(int count, int channels, const float *in, const float *norm, float * out)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
@@ -31,12 +31,12 @@ static __global__ void forward_kernel(int count, int channels, const Dtype *in, 
 		int c = i / spatial_dim % channels;
 		int s = i % spatial_dim;
 		
-		out[i] = Dtype(0.02) * in[i] / norm[n*spatial_dim + s];
+		out[i] = float(0.02) * in[i] / norm[n*spatial_dim + s];
 	}
 }
 //---------------------------------------------------
-template <typename Dtype>
-static __global__ void compute_diff_norm(int count, int channels, const Dtype *diff_out, const Dtype *in, const Dtype *norm, Dtype *diff_norm)
+
+static __global__ void compute_diff_norm(int count, int channels, const float *diff_out, const float *in, const float *norm, float *diff_norm)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
@@ -44,15 +44,15 @@ static __global__ void compute_diff_norm(int count, int channels, const Dtype *d
 		int n = i / spatial_dim;
 		int s = i % spatial_dim;
 		
-		Dtype sum = 0;
+		float sum = 0;
 		for (int c=0; c<channels; c++)
 			sum += diff_out[(n*channels+c)*spatial_dim+s]*(-in[(n*channels+c)*spatial_dim+s])/(norm[i]*norm[i]);
-		diff_norm[i] = Dtype(0.02) * sum;
+		diff_norm[i] = float(0.02) * sum;
 	}
 }
-template <typename Dtype>
-static __global__ void backward_kernel(int count, int channels, const Dtype *diff_out, const Dtype * in, 
-																const Dtype *norm, const Dtype *diff_norm, Dtype * diff_in)
+
+static __global__ void backward_kernel(int count, int channels, const float *diff_out, const float * in, 
+																const float *norm, const float *diff_norm, float * diff_in)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
@@ -61,13 +61,13 @@ static __global__ void backward_kernel(int count, int channels, const Dtype *dif
 		int c = i / spatial_dim % channels;
 		int s = i % spatial_dim;
 		
-		diff_in[i] = Dtype(0.02) * diff_out[i]/norm[n*spatial_dim+s] + diff_norm[n*spatial_dim+s]*in[i]/norm[n*spatial_dim+s]/Dtype(channels);
+		diff_in[i] = float(0.02) * diff_out[i]/norm[n*spatial_dim+s] + diff_norm[n*spatial_dim+s]*in[i]/norm[n*spatial_dim+s]/float(channels);
 	}
 }
 #endif
 //--------------------------------------------------
-template <typename Dtype>
-void ChannelNormalizeLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ChannelNormalizeLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 #if 0
   int num = bottom[0]->num();
@@ -75,16 +75,16 @@ void ChannelNormalizeLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& botto
   int height = bottom[0]->height();
   int width = bottom[0]->width();
 	
-	compute_norm<Dtype><<<num, CAFFE_CUDA_NUM_THREADS>>>
+	compute_norm<<<num, CAFFE_CUDA_NUM_THREADS>>>
 	(channels,bottom[0]->gpu_data(),norm_.mutable_gpu_data());
 	
-	forward_kernel<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+	forward_kernel<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(bottom[0]->count(),channels,bottom[0]->gpu_data(),norm_.gpu_data(),top[0]->mutable_gpu_data());
 #endif	
 }
 
-template <typename Dtype>
-void ChannelNormalizeLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ChannelNormalizeLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 #if 0
   int num = bottom[0]->num();
@@ -92,15 +92,15 @@ void ChannelNormalizeLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   int height = bottom[0]->height();
   int width = bottom[0]->width();
   
-  compute_diff_norm<Dtype><<<num, CAFFE_CUDA_NUM_THREADS>>>
+  compute_diff_norm<<<num, CAFFE_CUDA_NUM_THREADS>>>
 	(channels, top[0]->gpu_diff(),bottom[0]->gpu_data(),norm_.gpu_data(),norm_.mutable_gpu_diff());
   
-  backward_kernel<Dtype><<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+  backward_kernel<<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(top[0]->count(),channels,height*width,top[0]->gpu_diff(),bottom[0]->gpu_data(),norm_.gpu_data(),norm_.gpu_diff(),bottom[0]->mutable_gpu_diff());
 #endif	
 }
-template <typename Dtype>
-void ChannelNormalizeLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ChannelNormalizeLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 #if 0
 	int num = bottom[0]->num();
@@ -108,12 +108,12 @@ void ChannelNormalizeLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bo
   int height = bottom[0]->height();
   int width = bottom[0]->width();
   
-  compute_diff_norm<Dtype><<<num, CAFFE_CUDA_NUM_THREADS>>>
+  compute_diff_norm<<<num, CAFFE_CUDA_NUM_THREADS>>>
 	(num*height*width,channels, bottom[0]->gpu_sec_diff(),bottom[0]->gpu_data(),norm_.gpu_data(),norm_.mutable_gpu_sec_diff());
   
-  backward_kernel<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+  backward_kernel<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(bottom[0]->count(),channels, bottom[0]->gpu_sec_diff(),bottom[0]->gpu_data(),norm_.gpu_data(),norm_.gpu_sec_diff(),top[0]->mutable_gpu_sec_diff());
 #endif	
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ChannelNormalizeLayer);
+
 }  // namespace caffe

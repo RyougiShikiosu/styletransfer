@@ -4,9 +4,7 @@
 
 namespace caffe {
 
-
-template <typename Dtype>
-void ParallelLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+void ParallelLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	
 	LayerParameter layer_param(this->layer_param_);
@@ -18,7 +16,7 @@ void ParallelLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const 
   unary_layer_.resize(NGPUS);
   
   CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
-	unary_layer_[0] = LayerRegistry<Dtype>::CreateLayer(layer_param);
+	unary_layer_[0] = LayerRegistry::CreateLayer(layer_param);
 	
 	
 	unary_bottom_vec_[0].clear();
@@ -38,7 +36,7 @@ void ParallelLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const 
   for(int i=1;i<NGPUS;i++)
 	{
 		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));
-		unary_layer_[i] = LayerRegistry<Dtype>::CreateLayer(layer_param);
+		unary_layer_[i] = LayerRegistry::CreateLayer(layer_param);
 		unary_bottom_vec_[i].clear();
 		for (int k=0;k<bottom.size();k += NGPUS)
 			unary_bottom_vec_[i].push_back(bottom[k+i]);
@@ -61,8 +59,8 @@ void ParallelLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const 
 	this->decay_mult() = unary_layer_[0]->decay_mult();
 }
 
-template <typename Dtype>
-void ParallelLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParallelLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	for(int i=0;i<NGPUS;i++)
 	{
@@ -76,11 +74,11 @@ void ParallelLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 	if (this->layer_param_.type() == "Lambda")
 		LOG(FATAL)<<"lambda layer should be instanced !!";
 }
-template <typename Dtype>
-ParallelLayer<Dtype>::~ParallelLayer() 
+
+ParallelLayer::~ParallelLayer() 
 {
 }
 
-INSTANTIATE_CLASS(ParallelLayer);
+REGISTER_LAYER_CLASS(Parallel);
 }  // namespace caffe
 

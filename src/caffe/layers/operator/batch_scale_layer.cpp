@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void BatchScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void BatchScaleLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	if (this->blobs_.size() == 4)
   	LOG(INFO)<<"skip initialization";
@@ -17,13 +17,13 @@ void BatchScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, cons
     this->blobs_.resize(4);
     for(int i=0;i<this->blobs_.size();i++)
     {
-      this->blobs_[i].reset(new Blob<Dtype>());
+      this->blobs_[i].reset(new Blob());
       this->blobs_[i]->Reshape(1,K,1,1);
     }
-    caffe_set(this->blobs_[0]->count(),Dtype(1),this->blobs_[0]->mutable_cpu_data());
-    caffe_set(this->blobs_[1]->count(),Dtype(0),this->blobs_[1]->mutable_cpu_data());
-    caffe_set(this->blobs_[2]->count(),Dtype(0),this->blobs_[2]->mutable_cpu_data());
-    caffe_set(this->blobs_[3]->count(),Dtype(1),this->blobs_[3]->mutable_cpu_data());
+    caffe_set(this->blobs_[0]->count(),float(1),this->blobs_[0]->mutable_cpu_data());
+    caffe_set(this->blobs_[1]->count(),float(0),this->blobs_[1]->mutable_cpu_data());
+    caffe_set(this->blobs_[2]->count(),float(0),this->blobs_[2]->mutable_cpu_data());
+    caffe_set(this->blobs_[3]->count(),float(1),this->blobs_[3]->mutable_cpu_data());
 		
 
 		if (this->layer_param_.param_size() == 2)
@@ -49,8 +49,8 @@ void BatchScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, cons
   }
 }
 
-template <typename Dtype>
-void BatchScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BatchScaleLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -61,6 +61,6 @@ void BatchScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const v
 	top[0]->ReshapeLike(*bottom[0]);
 }
 
-INSTANTIATE_CLASS(BatchScaleLayer);
+
 REGISTER_LAYER_CLASS(BatchScale);
 }  // namespace caffe

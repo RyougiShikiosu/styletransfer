@@ -11,40 +11,40 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class SoftmaxWithLossLayer : public Layer<Dtype> {
+
+class SoftmaxWithLossLayer : public Layer {
  public:
-  explicit SoftmaxWithLossLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit SoftmaxWithLossLayer(const LayerParameter& param): Layer(param) {}
   virtual inline const char* type() const { return "SoftmaxWithLoss"; }
   
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
 
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
   
   
  protected:
 
-  Blob<Dtype> prob_;
+  Blob prob_;
   
   
-  shared_ptr<Layer<Dtype> > softmax_layer_;
+  shared_ptr<Layer > softmax_layer_;
  
   
   
-  vector<Blob<Dtype>*> softmax_bottom_vec_;
-  vector<Blob<Dtype>*> softmax_top_vec_;
+  vector<Blob*> softmax_bottom_vec_;
+  vector<Blob*> softmax_top_vec_;
 
   bool has_ignore_label_;
  
   int ignore_label_;
  
-  Blob<Dtype> counts_;
-  Blob<Dtype> loss_;
+  Blob counts_;
+  Blob loss_;
 };
 
 }  // namespace caffe

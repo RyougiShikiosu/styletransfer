@@ -14,9 +14,9 @@ using std::min;
 namespace caffe 
 {
 
-template <typename Dtype>
-void GuidedCRFLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                                       const vector<Blob<Dtype>*>& top)
+
+void GuidedCRFLayer::LayerSetUp(const vector<Blob*>& bottom,
+                                       const vector<Blob*>& top)
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -33,13 +33,13 @@ void GuidedCRFLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   nodeBel.resize(maxIter);
 //----------------------------------------	
 	myworkspace_.resize(3);
-	myworkspace_[0] = static_cast<Blob<Dtype> *>(Caffe::parallel_workspace_[0*Caffe::GPUs.size()+gpu_id_]);
-	myworkspace_[1] = static_cast<Blob<Dtype> *>(Caffe::parallel_workspace_[1*Caffe::GPUs.size()+gpu_id_]);
-	myworkspace_[2] = static_cast<Blob<Dtype> *>(Caffe::parallel_workspace_[2*Caffe::GPUs.size()+gpu_id_]);
+	myworkspace_[0] = static_cast<Blob *>(Caffe::parallel_workspace_[0*Caffe::GPUs.size()+gpu_id_]);
+	myworkspace_[1] = static_cast<Blob *>(Caffe::parallel_workspace_[1*Caffe::GPUs.size()+gpu_id_]);
+	myworkspace_[2] = static_cast<Blob *>(Caffe::parallel_workspace_[2*Caffe::GPUs.size()+gpu_id_]);
 //----------------------------------------	
 
   for(int iter=0;iter<maxIter;iter++)
-    nodeBel[iter]=new Blob<Dtype>();
+    nodeBel[iter]=new Blob();
 
   if (this->blobs_.size() > 0)
     LOG(INFO)<<"skip initialization";
@@ -47,15 +47,15 @@ void GuidedCRFLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   {
     int channels = bottom[0]->channels();
     this->blobs_.resize(1);
-    this->blobs_[0].reset(new Blob<Dtype>(1,1,channels,channels));
-    caffe_set(this->blobs_[0]->count(),Dtype(1),this->blobs_[0]->mutable_cpu_data());
+    this->blobs_[0].reset(new Blob(1,1,channels,channels));
+    caffe_set(this->blobs_[0]->count(),float(1),this->blobs_[0]->mutable_cpu_data());
     for(int c=0;c<channels;c++)
       this->blobs_[0]->mutable_cpu_data()[c*channels+c]=0;
   }
 }
 
-template <typename Dtype>
-void GuidedCRFLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void GuidedCRFLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
   top[0]->ReshapeLike(*bottom[0]);
@@ -103,8 +103,8 @@ void GuidedCRFLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const ve
 }
 
 
-template <typename Dtype>
-GuidedCRFLayer<Dtype>::~GuidedCRFLayer()
+
+GuidedCRFLayer::~GuidedCRFLayer()
 {
 	CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
 	for(int iter=0;iter<maxIter;iter++)
@@ -114,6 +114,6 @@ GuidedCRFLayer<Dtype>::~GuidedCRFLayer()
 
  
 
-INSTANTIATE_CLASS(GuidedCRFLayer);
+
 REGISTER_LAYER_CLASS(GuidedCRF);
 }  // namespace caffe

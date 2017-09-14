@@ -6,9 +6,9 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+
+void EltwiseLayer::LayerSetUp(const vector<Blob*>& bottom,
+      const vector<Blob*>& top) {
   CHECK(this->layer_param().eltwise_param().coeff_size() == 0
       || this->layer_param().eltwise_param().coeff_size() == bottom.size()) <<
       "Eltwise Layer takes one coefficient per bottom blob.";
@@ -16,7 +16,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   << "Eltwise layer only takes coefficients for summation.";
   op_ = this->layer_param_.eltwise_param().operation();
   // Blob-wise coefficients for the elementwise operation.
-  coeffs_ = vector<Dtype>(bottom.size(), 1);
+  coeffs_ = vector<float>(bottom.size(), 1);
   if (this->layer_param().eltwise_param().coeff_size()) 
   {
     for (int i = 0; i < bottom.size(); ++i) 
@@ -36,8 +36,8 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   stable_prod_grad_ = this->layer_param_.eltwise_param().stable_prod_grad();
 }
 
-template <typename Dtype>
-void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void EltwiseLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	for (int i=1;i<bottom.size();i++)
 	{
@@ -55,7 +55,7 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 }
 
 
-INSTANTIATE_CLASS(EltwiseLayer);
+
 REGISTER_LAYER_CLASS(Eltwise);
 
 }  // namespace caffe

@@ -13,21 +13,21 @@ namespace caffe {
 
 
 
-template <typename Dtype>
-class CuDNNDeConvolutionLayer : public DeConvolutionLayer<Dtype> 
+
+class CuDNNDeConvolutionLayer : public DeConvolutionLayer 
 {
  public:
-  explicit CuDNNDeConvolutionLayer(const LayerParameter& param) : DeConvolutionLayer<Dtype>(param) {}
+  explicit CuDNNDeConvolutionLayer(const LayerParameter& param) : DeConvolutionLayer(param) {}
   virtual ~CuDNNDeConvolutionLayer();
 	virtual inline const char* type() const { return "CuDNNDeConvolution"; }
 
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,   const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top,   const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
   
  protected:
   
@@ -49,7 +49,7 @@ class CuDNNDeConvolutionLayer : public DeConvolutionLayer<Dtype>
   int bottom_offset_, top_offset_, bias_offset_;
 	
 	
-	vector<Blob<Dtype> *> myworkspace_;
+	vector<Blob *> myworkspace_;
 	
 	int gpu_id_;
 };

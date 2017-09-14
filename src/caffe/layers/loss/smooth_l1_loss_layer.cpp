@@ -2,14 +2,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SmoothL1LossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SmoothL1LossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	ignore_value = this->layer_param_.loss_param().ignore_label();
 }
 
-template <typename Dtype>
-void SmoothL1LossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SmoothL1LossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	top[0]->Reshape(1,1,1,1);
 	
@@ -22,7 +22,7 @@ void SmoothL1LossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const
 }
 
 
-INSTANTIATE_CLASS(SmoothL1LossLayer);
+
 REGISTER_LAYER_CLASS(SmoothL1Loss);
 
 }  // namespace caffe

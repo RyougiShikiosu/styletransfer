@@ -20,13 +20,13 @@ using std::string;
 
 namespace caffe {
 
-template <typename Dtype>
+
 class Net
 {
  public:
-	Net(const NetParameter& param, const vector<shared_ptr<Blob<Dtype> > > net_input_blobs, const vector<string> net_input_blob_names);
+	Net(const NetParameter& param, const vector<shared_ptr<Blob > > net_input_blobs, const vector<string> net_input_blob_names);
   ~Net();
-  Dtype Forward();
+  float Forward();
   void Backward();
   void SecForward();
 
@@ -38,29 +38,29 @@ class Net
 	
 
   inline const string& name() { return name_; }
-  inline const vector<shared_ptr<Layer<Dtype> > >& layers() { return layers_; }
+  inline const vector<shared_ptr<Layer > >& layers() { return layers_; }
   inline const vector<string>& layer_names() { return layer_names_; }
   
-  inline const vector<shared_ptr<Blob<Dtype> > >& blobs() { return blobs_; }
+  inline const vector<shared_ptr<Blob > >& blobs() { return blobs_; }
   inline const vector<string>& blob_names() { return blob_names_; }
-	inline const vector<Dtype>& blob_loss_weights() const { return blob_loss_weights_; }
+	inline const vector<float>& blob_loss_weights() const { return blob_loss_weights_; }
 	inline vector<int>& output_blob_indices() { return output_blob_indices_; }  
 	inline const vector<int>& input_blob_indices() const { return input_blob_indices_; }
 	
 	void BcastData();
 	void ReduceDiff();
-	void ScaleDiff(const Dtype scalar);
+	void ScaleDiff(const float scalar);
 	 
-  inline const vector<Blob<Dtype>*>& output_blobs() const { return output_blobs_; }
-  inline const vector<Blob<Dtype>*>& input_blobs() const { return input_blobs_; }
+  inline const vector<shared_ptr<Blob > >& output_blobs() const { return output_blobs_; }
+  inline const vector<shared_ptr<Blob > >& input_blobs() const { return input_blobs_; }
 
-  inline vector<vector<Blob<Dtype>*> >& bottom_vecs() { return bottom_vecs_; }
-  inline vector<vector<Blob<Dtype>*> >& top_vecs() { return top_vecs_; }
+  inline vector<vector<Blob*> >& bottom_vecs() { return bottom_vecs_; }
+  inline vector<vector<Blob*> >& top_vecs() { return top_vecs_; }
 	
 	
 
 	
-	Dtype GetLearningRate(int iter, int max_iter);
+	float GetLearningRate(int iter, int max_iter);
 	void Snapshot();
 	
 	void StateToProto(NetState * state);
@@ -69,26 +69,26 @@ class Net
  protected:
  	vector<bool> layer_need_backward_;
  	
-  vector<shared_ptr<Layer<Dtype> > > layers_;
+  vector<shared_ptr<Layer > > layers_;
 	vector<string> layer_names_;
 	
-  vector<shared_ptr<Blob<Dtype> > > blobs_;
+  vector<shared_ptr<Blob > > blobs_;
   vector<string> blob_names_;
-  vector<Dtype> blob_loss_weights_;
+  vector<float> blob_loss_weights_;
   vector<int> input_blob_indices_;
   vector<int> output_blob_indices_;
   
   
-  vector<vector<Blob<Dtype>*> > bottom_vecs_;
+  vector<vector<Blob*> > bottom_vecs_;
   vector<vector<int> > bottom_id_vecs_;
-  vector<vector<Blob<Dtype>*> > top_vecs_;
+  vector<vector<Blob*> > top_vecs_;
   vector<vector<int> > top_id_vecs_;
   
- 	vector<shared_ptr<Blob<Dtype> > > tensor_flows_;
-  vector<shared_ptr<Blob<Dtype> > > tensor_flows_temp_;
+ 	vector<shared_ptr<Blob > > tensor_flows_;
+  vector<shared_ptr<Blob > > tensor_flows_temp_;
   
-	vector<Blob<Dtype>*> output_blobs_;
-	vector<Blob<Dtype>*> input_blobs_;
+	vector<shared_ptr<Blob> > output_blobs_;
+	vector<shared_ptr<Blob> > input_blobs_;
 	
   string name_;
 
@@ -98,8 +98,8 @@ class Net
 	
 	vector<bool> flow_flag;
 	int adam_iter_;
-	Dtype  momentum_power_;
-	Dtype momentum2_power_;
+	float  momentum_power_;
+	float momentum2_power_;
 	
 	shared_ptr<boost::thread> thread_;
 	

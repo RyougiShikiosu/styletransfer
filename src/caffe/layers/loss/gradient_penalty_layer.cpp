@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void GradientPenaltyLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void GradientPenaltyLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void GradientPenaltyLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void GradientPenaltyLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -24,6 +24,6 @@ void GradientPenaltyLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, co
 }
 
 
-INSTANTIATE_CLASS(GradientPenaltyLayer);
+
 REGISTER_LAYER_CLASS(GradientPenalty);
 }  // namespace caffe

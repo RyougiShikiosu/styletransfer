@@ -7,18 +7,18 @@
 namespace caffe {
 
 
-template <typename Dtype>
-void ReshapeLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ReshapeLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
 
-template <typename Dtype>
-void ReshapeLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ReshapeLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 }
-template <typename Dtype>
-void ReshapeLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ReshapeLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ReshapeLayer);
+
 }  // namespace caffe

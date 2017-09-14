@@ -5,8 +5,8 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
-template <typename Dtype>
-static __global__ void forward_kernel(int count, int channels,int spatial_dim, const Dtype *pred_data, const Dtype *label_data, Dtype *loss_data)
+
+static __global__ void forward_kernel(int count, int channels,int spatial_dim, const float *pred_data, const float *label_data, float *loss_data)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
@@ -14,7 +14,7 @@ static __global__ void forward_kernel(int count, int channels,int spatial_dim, c
 		int n = i / spatial_dim;
 		int s = i % spatial_dim;
 		int label = label_data[i];
-		Dtype sum = 0;
+		float sum = 0;
 		for (int c=0;c<channels;c++)
 		{
 			if (c != label)
@@ -25,8 +25,8 @@ static __global__ void forward_kernel(int count, int channels,int spatial_dim, c
 		loss_data[i] = sum;
 	}
 }
-template <typename Dtype>
-static __global__ void backward_kernel(int count, int channels,int spatial_dim, const Dtype *pred_data, const Dtype *label_data, Dtype *pred_diff)
+
+static __global__ void backward_kernel(int count, int channels,int spatial_dim, const float *pred_data, const float *label_data, float *pred_diff)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -42,25 +42,25 @@ static __global__ void backward_kernel(int count, int channels,int spatial_dim, 
 		}	
 	}
 }
-template <typename Dtype>
-void MaxLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void MaxLossLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
   int height = bottom[0]->height();
   int width = bottom[0]->width();
 	
-	forward_kernel<Dtype><<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
+	forward_kernel<<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
 	(num*height*width,channels,height*width,bottom[0]->gpu_data(),bottom[1]->gpu_data(),loss_.mutable_gpu_data());
 	
-	Dtype loss;
+	float loss;
   caffe_gpu_asum(num*height*width, loss_.gpu_data(), &loss);
   
-  top[0]->mutable_cpu_data()[0] = loss / Dtype(num*height*width);
+  top[0]->mutable_cpu_data()[0] = loss / float(num*height*width);
 }
 
-template <typename Dtype>
-void MaxLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void MaxLossLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -68,18 +68,18 @@ void MaxLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const ve
   int width = bottom[0]->width();
   if (Caffe::second_pass() == false)
 	{
-		backward_kernel<Dtype><<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
+		backward_kernel<<<CAFFE_GET_BLOCKS(num*height*width), CAFFE_CUDA_NUM_THREADS>>>
 		(num*height*width,channels,height*width,bottom[0]->gpu_data(),bottom[1]->gpu_data(),bottom[0]->mutable_gpu_diff());
 		
-		const Dtype loss_weight = top[0]->cpu_diff()[0] / Dtype(num*height*width);
+		const float loss_weight = top[0]->cpu_diff()[0] / float(num*height*width);
 		caffe_gpu_scal(bottom[0]->count(), loss_weight, bottom[0]->mutable_gpu_diff());
 	}
 }
 
-template <typename Dtype>
-void MaxLossLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void MaxLossLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(MaxLossLayer);
+
 }  // namespace caffe

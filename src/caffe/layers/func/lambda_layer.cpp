@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void LambdaLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void LambdaLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -20,7 +20,7 @@ void LambdaLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const ve
 	unary_bottom_vec_.resize(this->layer_param_.branch_size());
 	for (int i=0;i<this->layer_param_.branch_size();i++)
 	{
-		all_layer_[i] = LayerRegistry<Dtype>::CreateLayer(this->layer_param_.branch(i));
+		all_layer_[i] = LayerRegistry::CreateLayer(this->layer_param_.branch(i));
 		
 		unary_bottom_vec_[i].clear();
 		for (int j=0;j<this->layer_param_.branch(i).bottom_index_size();j++)
@@ -45,8 +45,8 @@ void LambdaLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const ve
 	}
 }
 
-template <typename Dtype>
-void LambdaLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void LambdaLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	layer_index_ = -1;
 	for (int i=0;i<this->layer_param_.branch_size();i++)
@@ -70,6 +70,6 @@ void LambdaLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vecto
 	all_layer_[layer_index_]->Reshape(unary_bottom_vec_[layer_index_], top); 
 }
 
-INSTANTIATE_CLASS(LambdaLayer);
+
 REGISTER_LAYER_CLASS(Lambda);
 }  // namespace caffe

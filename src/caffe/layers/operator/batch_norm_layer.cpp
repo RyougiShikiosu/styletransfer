@@ -4,8 +4,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void BatchNormLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -14,8 +14,8 @@ void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const
 			break;
 	gpu_id_ = i;
 	
-	mean_buffer_ = new Blob<Dtype>();
-	var_buffer_ = new Blob<Dtype>();
+	mean_buffer_ = new Blob();
+	var_buffer_ = new Blob();
 	
   if (this->blobs_.size() == 2)
   	LOG(INFO)<<"skip initialization";
@@ -25,11 +25,11 @@ void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const
     this->blobs_.resize(2);
     for(int i=0;i<this->blobs_.size();i++)
     {
-      this->blobs_[i].reset(new Blob<Dtype>());
+      this->blobs_[i].reset(new Blob());
       this->blobs_[i]->Reshape(1,K,1,1);
     }
-    caffe_set(this->blobs_[0]->count(),Dtype(1),this->blobs_[0]->mutable_cpu_data());
-    caffe_set(this->blobs_[1]->count(),Dtype(0),this->blobs_[1]->mutable_cpu_data());
+    caffe_set(this->blobs_[0]->count(),float(1),this->blobs_[0]->mutable_cpu_data());
+    caffe_set(this->blobs_[1]->count(),float(0),this->blobs_[1]->mutable_cpu_data());
 		
 
 
@@ -43,8 +43,8 @@ void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const
   }
 }
 
-template <typename Dtype>
-void BatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void BatchNormLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -59,13 +59,13 @@ void BatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const ve
   
 }
 
-template <typename Dtype>
-BatchNormLayer<Dtype>::~BatchNormLayer() 
+
+BatchNormLayer::~BatchNormLayer() 
 {
 	delete mean_buffer_;
 	delete var_buffer_;
 }
 
-INSTANTIATE_CLASS(BatchNormLayer);
+
 REGISTER_LAYER_CLASS(BatchNorm);
 }  // namespace caffe

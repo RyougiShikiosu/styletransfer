@@ -2,52 +2,29 @@
 #define CAFFE_SYNCEDMEM_HPP_
 
 #include <cstdlib>
-
+#include "caffe/util/math_functions.hpp"
 #include "caffe/common.hpp"
 
 namespace caffe {
 
-// If CUDA is available and in GPU mode, host memory will be allocated pinned,
-// using cudaMallocHost. It avoids dynamic pinning for transfers (DMA).
-// The improvement in performance seems negligible in the single GPU case,
-// but might be more significant for parallel training. Most importantly,
-// it improved stability for large models on many GPUs.
 inline void CaffeMallocHost(void** ptr, size_t size, bool* use_cuda) {
-#ifndef CPU_ONLY
 	CUDA_CHECK(cudaMallocHost(ptr, size));
 	*use_cuda = true;
 	return;
-#else
-  *ptr = malloc(size);
-  *use_cuda = false;
-  CHECK(*ptr) << "host allocation of size " << size << " failed";
-#endif  
 }
 
 inline void CaffeFreeHost(void* ptr, bool use_cuda) {
-#ifndef CPU_ONLY
 	CUDA_CHECK(cudaFreeHost(ptr));
 	return;
-#else
-  free(ptr);
-#endif  
 }
 
 
-/**
- * @brief Manages memory allocation and synchronization between the host (CPU)
- *        and device (GPU).
- *
- * TODO(dox): more thorough description.
- */
 class SyncedMemory 
 {
  public:
-  SyncedMemory()
-      : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(0), head_(UNINITIALIZED),
+  SyncedMemory() : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(0), head_(UNINITIALIZED),
         cpu_malloc_use_cuda_(false), gpu_device_(-1) {}
-  explicit SyncedMemory(size_t size)
-      : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(size), head_(UNINITIALIZED),
+  explicit SyncedMemory(size_t size) : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(size), head_(UNINITIALIZED),
         cpu_malloc_use_cuda_(false), gpu_device_(-1) {}
   ~SyncedMemory();
   const void* cpu_data();
@@ -74,6 +51,53 @@ class SyncedMemory
   DISABLE_COPY_AND_ASSIGN(SyncedMemory);
 };  // class SyncedMemory
 
+
+inline void SyncedMemory::to_cpu() 
+{
+  switch (head_) 
+  {
+  case UNINITIALIZED:
+    CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
+    caffe_memset(size_, 0, cpu_ptr_);
+    head_ = HEAD_AT_CPU;
+    break;
+  case HEAD_AT_GPU:
+    if (cpu_ptr_ == NULL) 
+      CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
+
+    caffe_gpu_memcpy(size_, gpu_ptr_, cpu_ptr_);
+    head_ = SYNCED;
+    break;
+  case HEAD_AT_CPU:
+  case SYNCED:
+    break;
+  }
+}
+
+inline void SyncedMemory::to_gpu() 
+{
+  switch (head_) 
+  {
+  case UNINITIALIZED:
+    CUDA_CHECK(cudaGetDevice(&gpu_device_));
+    CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
+    caffe_gpu_memset(size_, 0, gpu_ptr_);
+    head_ = HEAD_AT_GPU;
+    break;
+  case HEAD_AT_CPU:
+    if (gpu_ptr_ == NULL) 
+    {
+      CUDA_CHECK(cudaGetDevice(&gpu_device_));
+      CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
+    }
+    caffe_gpu_memcpy(size_, cpu_ptr_, gpu_ptr_);
+    head_ = SYNCED;
+    break;
+  case HEAD_AT_GPU:
+  case SYNCED:
+    break;
+  }
+}
 }  // namespace caffe
 
 #endif  // CAFFE_SYNCEDMEM_HPP_

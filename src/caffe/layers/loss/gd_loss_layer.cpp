@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void GdLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void GdLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void GdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void GdLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -29,6 +29,6 @@ void GdLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vecto
 }
 
 
-INSTANTIATE_CLASS(GdLossLayer);
+
 REGISTER_LAYER_CLASS(GdLoss);
 }  // namespace caffe

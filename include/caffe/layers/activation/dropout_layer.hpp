@@ -10,23 +10,23 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class DropoutLayer : public Layer<Dtype> {
+
+class DropoutLayer : public Layer {
  public:
-  explicit DropoutLayer(const LayerParameter& param) : Layer<Dtype>(param) {}
+  explicit DropoutLayer(const LayerParameter& param) : Layer(param) {}
   virtual inline const char* type() const { return "Dropout"; }
 
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
 
 
-  Blob<Dtype> rand_vec_;
-  Blob<bool> flag_vec_;
-  Dtype threshold_;
+  Blob rand_vec_;
+  Blob flag_vec_;
+  float threshold_;
 };
 
 }  // namespace caffe

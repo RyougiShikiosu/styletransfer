@@ -13,7 +13,7 @@ const int kMaxBlobAxes = 32;
 
 namespace caffe {
 
-template <typename Dtype>
+
 class Blob 
 {
  public:
@@ -36,30 +36,30 @@ class Blob
   
   
   
-	void ReshapeLike(const Blob<Dtype>& other) { Reshape(other.num(),other.channels(),other.height(),other.width()); }
+	void ReshapeLike(const Blob& other) { Reshape(other.num(),other.channels(),other.height(),other.width()); }
   inline int count() const { return count_; }
 	inline int num() const { return num_; }
 	inline int channels() const { return channels_; }
 	inline int height() const { return height_; }
 	inline int width() const { return width_; }
   inline int offset(const int n, const int c = 0, const int h = 0, const int w = 0) const  { return ((n * channels() + c) * height() + h) * width() + w; }
-	const Dtype* cpu_data() const  { return (const Dtype*)data_->cpu_data(); }
-	const Dtype* gpu_data() const  { return (const Dtype*)data_->gpu_data(); }
-	const Dtype* cpu_diff() const  { return (const Dtype*)diff_->cpu_data(); }
-	const Dtype* gpu_diff() const  { return (const Dtype*)diff_->gpu_data(); }
-	const Dtype* cpu_sec_diff() const  { return (const Dtype*)sec_diff_->cpu_data(); }
-	const Dtype* gpu_sec_diff() const  { return (const Dtype*)sec_diff_->gpu_data(); }
-	Dtype* mutable_cpu_data() { return static_cast<Dtype*>(data_->mutable_cpu_data()); }
-	Dtype* mutable_gpu_data() { return static_cast<Dtype*>(data_->mutable_gpu_data()); }
-	Dtype* mutable_cpu_diff() { return static_cast<Dtype*>(diff_->mutable_cpu_data()); }
-	Dtype* mutable_gpu_diff() { return static_cast<Dtype*>(diff_->mutable_gpu_data()); }
-	Dtype* mutable_cpu_sec_diff() { return static_cast<Dtype*>(sec_diff_->mutable_cpu_data()); }
-	Dtype* mutable_gpu_sec_diff() { return static_cast<Dtype*>(sec_diff_->mutable_gpu_data()); }
+	const float* cpu_data() const  { return (const float*)data_->cpu_data(); }
+	const float* gpu_data() const  { return (const float*)data_->gpu_data(); }
+	const float* cpu_diff() const  { return (const float*)diff_->cpu_data(); }
+	const float* gpu_diff() const  { return (const float*)diff_->gpu_data(); }
+	const float* cpu_sec_diff() const  { return (const float*)sec_diff_->cpu_data(); }
+	const float* gpu_sec_diff() const  { return (const float*)sec_diff_->gpu_data(); }
+	float* mutable_cpu_data() { return static_cast<float*>(data_->mutable_cpu_data()); }
+	float* mutable_gpu_data() { return static_cast<float*>(data_->mutable_gpu_data()); }
+	float* mutable_cpu_diff() { return static_cast<float*>(diff_->mutable_cpu_data()); }
+	float* mutable_gpu_diff() { return static_cast<float*>(diff_->mutable_gpu_data()); }
+	float* mutable_cpu_sec_diff() { return static_cast<float*>(sec_diff_->mutable_cpu_data()); }
+	float* mutable_gpu_sec_diff() { return static_cast<float*>(sec_diff_->mutable_gpu_data()); }
 	inline const shared_ptr<SyncedMemory>& data() const  { return data_; }
   inline const shared_ptr<SyncedMemory>& diff() const  { return diff_; }
   inline const shared_ptr<SyncedMemory>& sec_diff() const  { return sec_diff_; }
   
-  void set_cpu_data(Dtype* data) { data_->set_cpu_data(data); }
+  void set_cpu_data(float* data) { data_->set_cpu_data(data); }
   
  protected:
   shared_ptr<SyncedMemory> data_;

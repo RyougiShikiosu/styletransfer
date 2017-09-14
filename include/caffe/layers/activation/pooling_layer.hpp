@@ -12,27 +12,27 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class PoolingLayer : public Layer<Dtype> 
+
+class PoolingLayer : public Layer 
 {
  public:
-  explicit PoolingLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit PoolingLayer(const LayerParameter& param): Layer(param) {}
   
 
   virtual inline const char* type() const { return "Pooling"; }
  
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
- 	virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+ 	virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
 
   int kernel_size_;
   int pad_;
   int stride_;
   int pooled_height_, pooled_width_;
-  Blob<int> max_idx_;
+  Blob max_idx_;
 };
 
 }  // namespace caffe

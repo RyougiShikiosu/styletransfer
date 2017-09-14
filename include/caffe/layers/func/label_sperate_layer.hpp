@@ -10,19 +10,19 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class LabelSperateLayer : public Layer<Dtype> {
+
+class LabelSperateLayer : public Layer {
  public:
-  explicit LabelSperateLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit LabelSperateLayer(const LayerParameter& param): Layer(param) {}
   
 
   virtual inline const char* type() const { return "LabelSperate"; }
 	
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
 #if 0
  	int stuff_mapping[150];

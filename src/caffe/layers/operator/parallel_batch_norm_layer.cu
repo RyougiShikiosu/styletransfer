@@ -6,11 +6,11 @@
 
 namespace caffe {
 
-template <typename Dtype>
+
 static __global__ void kernel_test_forward(
     const int num, const int channels, const int spatial_dim,
-    const Dtype* scale, const Dtype* bias, const Dtype* mean, const Dtype* var, 
-    const Dtype eps, const Dtype* bottom_data,  Dtype* top_data) {
+    const float* scale, const float* bias, const float* mean, const float* var, 
+    const float eps, const float* bottom_data,  float* top_data) {
   CUDA_KERNEL_LOOP(index, num * channels * spatial_dim) {
     int c = (index / spatial_dim) % channels;
     top_data[index] = ((bottom_data[index] - mean[c]) / sqrt(var[c] + eps))
@@ -18,24 +18,24 @@ static __global__ void kernel_test_forward(
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_test_backward(
     const int num, const int channels, const int spatial_dim,
-    const Dtype* scale, const Dtype* bias, const Dtype* mean, const Dtype* var,
-    const Dtype eps, const Dtype* top_diff, Dtype* bottom_diff) {
+    const float* scale, const float* bias, const float* mean, const float* var,
+    const float eps, const float* top_diff, float* bottom_diff) {
   CUDA_KERNEL_LOOP(index, num * channels * spatial_dim) {
     int c = (index / spatial_dim) % channels;
     bottom_diff[index] = top_diff[index] / sqrt(var[c] + eps) * scale[c];
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_local_stats(int num, int channels, int spatial_dim,
-    const Dtype norm_factor,
-    const Dtype* bottom_data, Dtype* mean, Dtype* var) {
+    const float norm_factor,
+    const float* bottom_data, float* mean, float* var) {
   // store local E[x] to mean, E[x^2] to var temporarily
-  __shared__ Dtype buffer1[CAFFE_CUDA_NUM_THREADS];
-  __shared__ Dtype buffer2[CAFFE_CUDA_NUM_THREADS];
+  __shared__ float buffer1[CAFFE_CUDA_NUM_THREADS];
+  __shared__ float buffer2[CAFFE_CUDA_NUM_THREADS];
   const int tid = threadIdx.x;
   const int c = blockIdx.x;
 
@@ -65,14 +65,14 @@ static __global__ void kernel_local_stats(int num, int channels, int spatial_dim
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_backward_scale_bias(
     const int num, const int channels, const int spatial_dim,
-    const Dtype* mean, const Dtype* var, const Dtype eps,
-    const Dtype* top_diff, const Dtype* bottom_data,
-    Dtype* scale_diff, Dtype* bias_diff) {
-  __shared__ Dtype buffer1[CAFFE_CUDA_NUM_THREADS];
-  __shared__ Dtype buffer2[CAFFE_CUDA_NUM_THREADS];
+    const float* mean, const float* var, const float eps,
+    const float* top_diff, const float* bottom_data,
+    float* scale_diff, float* bias_diff) {
+  __shared__ float buffer1[CAFFE_CUDA_NUM_THREADS];
+  __shared__ float buffer2[CAFFE_CUDA_NUM_THREADS];
   const int tid = threadIdx.x;
   const int c = blockIdx.x;
 
@@ -102,33 +102,33 @@ static __global__ void kernel_backward_scale_bias(
   }
 }
 
-template <typename Dtype>
+
 static __global__ void kernel_backward_bottom(
     const int num, const int channels, const int spatial_dim,
-    const Dtype* scale, const Dtype* bias,
-    const Dtype* mean, const Dtype* var, const Dtype eps,
-    const Dtype norm_factor,
-    const Dtype* top_diff, const Dtype* scale_diff, const Dtype* bias_diff,
-    const Dtype* bottom_data, Dtype* bottom_diff) {
+    const float* scale, const float* bias,
+    const float* mean, const float* var, const float eps,
+    const float norm_factor,
+    const float* top_diff, const float* scale_diff, const float* bias_diff,
+    const float* bottom_data, float* bottom_diff) {
   CUDA_KERNEL_LOOP(index, num * channels * spatial_dim) {
     int c = (index / spatial_dim) % channels;
-    const Dtype inv_std = Dtype(1) / sqrt(var[c] + eps);
-    const Dtype x_norm = (bottom_data[index] - mean[c]) * inv_std;
+    const float inv_std = float(1) / sqrt(var[c] + eps);
+    const float x_norm = (bottom_data[index] - mean[c]) * inv_std;
     bottom_diff[index] = scale[c] * inv_std *
         (top_diff[index] - (x_norm * scale_diff[c] + bias_diff[c]) / norm_factor);
   }
 }
 
-template <typename Dtype>
-void ParallelBatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParallelBatchNormLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (Caffe::number_collect_sample != -1)
 	{
 		CHECK_EQ(this->parallel_blobs_.size(),4*NGPUS);
 		if (Caffe::number_collect_sample == 0)
 		{
-			caffe_gpu_set(this->blobs_[2]->count(),Dtype(0),this->blobs_[2]->mutable_gpu_data());
-			caffe_gpu_set(this->blobs_[3]->count(),Dtype(0),this->blobs_[3]->mutable_gpu_data());
+			caffe_gpu_set(this->blobs_[2]->count(),float(0),this->blobs_[2]->mutable_gpu_data());
+			caffe_gpu_set(this->blobs_[3]->count(),float(0),this->blobs_[3]->mutable_gpu_data());
 		}		
 		for (int i = 0; i < NGPUS; i++) 
 		{  	
@@ -176,52 +176,47 @@ void ParallelBatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bott
 	int width = bottom[0]->width();
 
 	const int m = num * height * width * NGPUS;
+//----------------------------------------------------	
 	// compute local E[x] and E[x^2]
-		
-	for(int i=0;i<NGPUS;i++)
-	{ 
-		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
-		kernel_local_stats<<<channels, CAFFE_CUDA_NUM_THREADS>>>(
-			num, channels, height * width,
-			Dtype(m),
-			bottom[i]->gpu_data(),
-			parallel_mean_buffer_[i]->mutable_gpu_data(),
-			parallel_var_buffer_[i]->mutable_gpu_data()
-		);
-	}		
-
-
-	// sync E[x] and E[x^2]
-	REDUCE_DATA(parallel_mean_buffer_);
-	REDUCE_DATA(parallel_var_buffer_);
-
-
-	for(int i=0;i<NGPUS;i++)
-	{ 
-		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
-		caffe_gpu_mul(channels, parallel_mean_buffer_[i]->gpu_data(), parallel_mean_buffer_[i]->gpu_data(),
-					        top[i]->mutable_gpu_data());  // reuse the top buffer
-		caffe_gpu_sub(channels, parallel_var_buffer_[i]->gpu_data(), top[i]->gpu_data(),
-					        parallel_var_buffer_[i]->mutable_gpu_data());
-	}			 
-	
-	
-	if (Caffe::number_collect_sample == 0 && Caffe::bn_state() == "learned")
-	{
+	if (Caffe::bn_state() == "learned")
+	{	
+		if (Caffe::number_collect_sample == 0)
+		{
+			for(int i=0;i<NGPUS;i++)
+			{ 
+				CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
+				caffe_gpu_set(this->parallel_blobs_[2*NGPUS+i]->count(),float(0),this->parallel_blobs_[2*NGPUS+i]->mutable_gpu_data());
+				caffe_gpu_set(this->parallel_blobs_[3*NGPUS+i]->count(),float(0),this->parallel_blobs_[3*NGPUS+i]->mutable_gpu_data());
+			}
+		}
 		for(int i=0;i<NGPUS;i++)
 		{ 
 			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
-			caffe_gpu_set(this->parallel_blobs_[2*NGPUS+i]->count(),Dtype(0),this->parallel_blobs_[2*NGPUS+i]->mutable_gpu_data());
-			caffe_gpu_set(this->parallel_blobs_[3*NGPUS+i]->count(),Dtype(0),this->parallel_blobs_[3*NGPUS+i]->mutable_gpu_data());
-		}
-	}
-	if (Caffe::bn_state() == "learned")
-	{
-		Dtype factor;
+			kernel_local_stats<<<channels, CAFFE_CUDA_NUM_THREADS>>>(
+				num, channels, height * width,
+				float(m),
+				bottom[i]->gpu_data(),
+				parallel_mean_buffer_[i]->mutable_gpu_data(),
+				parallel_var_buffer_[i]->mutable_gpu_data());
+		}		
+		// sync E[x] and E[x^2]
+		REDUCE_DATA(parallel_mean_buffer_);
+		REDUCE_DATA(parallel_var_buffer_);
+
+
+		for(int i=0;i<NGPUS;i++)
+		{ 
+			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
+			caffe_gpu_mul(channels, parallel_mean_buffer_[i]->gpu_data(), parallel_mean_buffer_[i]->gpu_data(),
+							      top[i]->mutable_gpu_data());  // reuse the top buffer
+			caffe_gpu_sub(channels, parallel_var_buffer_[i]->gpu_data(), top[i]->gpu_data(),
+							      parallel_var_buffer_[i]->mutable_gpu_data());
+		}			 
+		float factor;
 		if (Caffe::number_collect_sample == -1)
 			factor = 0.01;
 		else 
-			factor = Dtype(1)/Dtype(Caffe::number_collect_sample+1);
+			factor = float(1)/float(Caffe::number_collect_sample+1);
 		
 		for(int i=0;i<NGPUS;i++)
 		{ 
@@ -233,24 +228,37 @@ void ParallelBatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bott
 		    factor, parallel_var_buffer_[i]->gpu_data(),
 		    1-factor, this->parallel_blobs_[3*NGPUS+i]->mutable_gpu_data());
 		}
+		for(int i=0;i<NGPUS;i++)
+		{ 
+			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
+			kernel_test_forward<<<CAFFE_GET_BLOCKS(bottom[i]->count()),CAFFE_CUDA_NUM_THREADS>>>
+			( num, channels, height * width,
+				this->parallel_blobs_[0*NGPUS+i]->gpu_data(),
+				this->parallel_blobs_[1*NGPUS+i]->gpu_data(),
+				parallel_mean_buffer_[i]->gpu_data(),
+				parallel_var_buffer_[i]->gpu_data(),
+				float(BN_EPS),
+				bottom[i]->gpu_data(),
+				top[i]->mutable_gpu_data());
+		}
 	}
-
-		
-	for(int i=0;i<NGPUS;i++)
-	{ 
-		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
-		kernel_test_forward<<<CAFFE_GET_BLOCKS(bottom[i]->count()),
-				CAFFE_CUDA_NUM_THREADS>>>(
-			num, channels, height * width,
-			this->parallel_blobs_[0*NGPUS+i]->gpu_data(),
-			this->parallel_blobs_[1*NGPUS+i]->gpu_data(),
-			parallel_mean_buffer_[i]->gpu_data(),
-			parallel_var_buffer_[i]->gpu_data(),
-			Dtype(BN_EPS),
-			bottom[i]->gpu_data(),
-			top[i]->mutable_gpu_data()
-		);
+	else
+	{
+		for(int i=0;i<NGPUS;i++)
+		{ 
+			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
+			kernel_test_forward<<<CAFFE_GET_BLOCKS(bottom[i]->count()), CAFFE_CUDA_NUM_THREADS>>>
+			( num, channels, height * width,
+				this->parallel_blobs_[0*NGPUS+i]->gpu_data(),
+				this->parallel_blobs_[1*NGPUS+i]->gpu_data(),
+				this->parallel_blobs_[2*NGPUS+i]->gpu_data(),
+				this->parallel_blobs_[3*NGPUS+i]->gpu_data(),
+				float(BN_EPS),
+				bottom[i]->gpu_data(),
+				top[i]->mutable_gpu_data());
+		}
 	}
+//----------------------------------------------------
 		
 	
 	if (Caffe::number_collect_sample != -1)
@@ -268,13 +276,13 @@ void ParallelBatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bott
 					this->parallel_blobs_[3*NGPUS+i]->count(), ncclFloat,ncclSum,0,Caffe::comms(i),NULL);
 		}
 		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
-		caffe_gpu_scal(this->blobs_[2]->count(),Dtype(1)/Dtype(NGPUS),this->blobs_[2]->mutable_gpu_data());
-		caffe_gpu_scal(this->blobs_[3]->count(),Dtype(1)/Dtype(NGPUS),this->blobs_[3]->mutable_gpu_data());	
+		caffe_gpu_scal(this->blobs_[2]->count(),float(1)/float(NGPUS),this->blobs_[2]->mutable_gpu_data());
+		caffe_gpu_scal(this->blobs_[3]->count(),float(1)/float(NGPUS),this->blobs_[3]->mutable_gpu_data());	
 	}			
 }
 
-template <typename Dtype>
-void ParallelBatchNormLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ParallelBatchNormLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {	 
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -289,7 +297,7 @@ void ParallelBatchNormLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top
 			num, channels, height * width,
 			parallel_mean_buffer_[i]->gpu_data(),
 			parallel_var_buffer_[i]->gpu_data(),
-			Dtype(BN_EPS),
+			float(BN_EPS),
 			top[i]->gpu_diff(),
 			bottom[i]->gpu_data(),
 			parallel_mean_buffer_[i]->mutable_gpu_diff(),  // temp use for local scale diff
@@ -303,10 +311,10 @@ void ParallelBatchNormLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top
 	for(int i=0;i<NGPUS;i++)
 	{
 		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));	
-		caffe_gpu_axpy(channels, Dtype(1) / Dtype(NGPUS),
+		caffe_gpu_axpy(channels, float(1) / float(NGPUS),
 			             parallel_mean_buffer_[i]->gpu_diff(),
 			             this->parallel_blobs_[0*NGPUS+i]->mutable_gpu_diff());
-		caffe_gpu_axpy(channels, Dtype(1) / Dtype(NGPUS),
+		caffe_gpu_axpy(channels, float(1) / float(NGPUS),
 			             parallel_var_buffer_[i]->gpu_diff(),
 			             this->parallel_blobs_[1*NGPUS+i]->mutable_gpu_diff());         	             
 	}	               
@@ -321,8 +329,8 @@ void ParallelBatchNormLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top
 			this->parallel_blobs_[1*NGPUS+i]->gpu_data(),
 			parallel_mean_buffer_[i]->gpu_data(),
 			parallel_var_buffer_[i]->gpu_data(),
-			Dtype(BN_EPS),
-			Dtype(num * height * width * NGPUS),
+			float(BN_EPS),
+			float(num * height * width * NGPUS),
 			top[i]->gpu_diff(),
 			parallel_mean_buffer_[i]->gpu_diff(),
 			parallel_var_buffer_[i]->gpu_diff(),
@@ -330,10 +338,10 @@ void ParallelBatchNormLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top
 			bottom[i]->mutable_gpu_diff());
 	}
 }
-template <typename Dtype>
-void ParallelBatchNormLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParallelBatchNormLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ParallelBatchNormLayer);
+
 
 }  // namespace caffe

@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void MeanVarianceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void MeanVarianceLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void MeanVarianceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void MeanVarianceLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -25,6 +25,6 @@ void MeanVarianceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const
 
 
 
-INSTANTIATE_CLASS(MeanVarianceLayer);
+
 REGISTER_LAYER_CLASS(MeanVariance);
 }  // namespace caffe

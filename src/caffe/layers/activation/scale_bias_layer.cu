@@ -5,10 +5,10 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
-template <typename Dtype>
+
 static __global__ void forward_kernel(const int count, const int channels, const int spatial_dim, const int n_labels, 
-																												const Dtype* in, const Dtype * label, 
-																												const Dtype * w, const Dtype * b, Dtype* out) 
+																												const float* in, const float * label, 
+																												const float * w, const float * b, float* out) 
 {
   CUDA_KERNEL_LOOP(i, count) 
   {
@@ -19,10 +19,10 @@ static __global__ void forward_kernel(const int count, const int channels, const
   	out[i] = w[cur_label*channels+c] * in[i] + b[cur_label*channels+c];
   }
 }
-template <typename Dtype>
+
 static __global__ void backward_kernel_data(const int count, const int channels, const int spatial_dim, const int n_labels, 
-																												const Dtype* out_diff, const Dtype *label,
-																												const Dtype * w, const Dtype * b, Dtype* in_diff) 
+																												const float* out_diff, const float *label,
+																												const float * w, const float * b, float* in_diff) 
 {
   CUDA_KERNEL_LOOP(i, count) 
   {
@@ -33,13 +33,13 @@ static __global__ void backward_kernel_data(const int count, const int channels,
   	in_diff[i] = w[cur_label*channels+c] * out_diff[i];
   }
 }
-template <typename Dtype>
+
 static __global__ void backward_kernel_weight(int channels, int spatial_dim, const int n_labels, 
-																											 const Dtype* top_diff, const Dtype * bottom_data,  const int cur_label,
-																											 Dtype* w_diff, Dtype* b_diff) 
+																											 const float* top_diff, const float * bottom_data,  const int cur_label,
+																											 float* w_diff, float* b_diff) 
 {
-  __shared__ Dtype buffer1[CAFFE_CUDA_NUM_THREADS];
-  __shared__ Dtype buffer2[CAFFE_CUDA_NUM_THREADS];
+  __shared__ float buffer1[CAFFE_CUDA_NUM_THREADS];
+  __shared__ float buffer2[CAFFE_CUDA_NUM_THREADS];
   const int tid = threadIdx.x;
   const int c = blockIdx.x;
 
@@ -71,8 +71,8 @@ static __global__ void backward_kernel_weight(int channels, int spatial_dim, con
   }
 }
 //---------------------------
-template <typename Dtype>
-static __global__ void mean_abstract_kernel(int count, int channels, int spatial_dim, const Dtype * in, Dtype *out)
+
+static __global__ void mean_abstract_kernel(int count, int channels, int spatial_dim, const float * in, float *out)
 {
 	CUDA_KERNEL_LOOP(i, count)
   {
@@ -86,16 +86,16 @@ static __global__ void mean_abstract_kernel(int count, int channels, int spatial
   }
 }
 //---------------------------
-template <typename Dtype>
-void ScaleBiasLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ScaleBiasLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-	if (false)
+	if (true)
 	{
 		caffe_copy(bottom[0]->count(),bottom[0]->gpu_data(),top[0]->mutable_gpu_data());
-		caffe_gpu_scal(top[0]->count(), Dtype(127.5), top[0]->mutable_gpu_data());
-		caffe_gpu_add_scalar(top[0]->count(), Dtype(127.5), top[0]->mutable_gpu_data());
+		caffe_gpu_scal(top[0]->count(), float(127.5), top[0]->mutable_gpu_data());
+		caffe_gpu_add_scalar(top[0]->count(), float(127.5), top[0]->mutable_gpu_data());
 	
-		mean_abstract_kernel<Dtype><<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		mean_abstract_kernel<<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(top[0]->count(),top[0]->channels(),top[0]->height()*top[0]->width(),top[0]->gpu_data(),top[0]->mutable_gpu_data());
 	}
 	else
@@ -105,19 +105,19 @@ void ScaleBiasLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, cons
 		int height = bottom[0]->height();
 		int width = bottom[0]->width();
 		
-		forward_kernel<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		forward_kernel<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
   	(bottom[0]->count(), channels, height*width, classes_, bottom[0]->gpu_data(), bottom[1]->gpu_data(), 
   						this->blobs_[0]->gpu_data(), this->blobs_[1]->gpu_data(), top[0]->mutable_gpu_data());
 	}
 }
 
-template <typename Dtype>
-void ScaleBiasLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ScaleBiasLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
-	if (false)
+	if (true)
 	{
 		caffe_copy(bottom[0]->count(),top[0]->gpu_diff(),bottom[0]->mutable_gpu_diff());
-		caffe_gpu_scal(bottom[0]->count(), Dtype(127.5), bottom[0]->mutable_gpu_diff());
+		caffe_gpu_scal(bottom[0]->count(), float(127.5), bottom[0]->mutable_gpu_diff());
 	}
 	else
 	{
@@ -126,7 +126,7 @@ void ScaleBiasLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const 
 		int height = bottom[0]->height();
 		int width = bottom[0]->width();
 		
-		backward_kernel_data<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		backward_kernel_data<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(bottom[0]->count(), channels, height*width, classes_, top[0]->gpu_diff(), bottom[1]->gpu_data(), 
 									this->blobs_[0]->gpu_data(), this->blobs_[1]->gpu_data(), bottom[0]->mutable_gpu_diff());
 		
@@ -142,13 +142,13 @@ void ScaleBiasLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const 
 	}
 
 }
-template <typename Dtype>
-void ScaleBiasLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ScaleBiasLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-	if (false)
+	if (true)
 	{
 		caffe_copy(bottom[0]->count(),bottom[0]->gpu_sec_diff(),top[0]->mutable_gpu_sec_diff());
-		caffe_gpu_scal(bottom[0]->count(), Dtype(127.5), top[0]->mutable_gpu_sec_diff());
+		caffe_gpu_scal(bottom[0]->count(), float(127.5), top[0]->mutable_gpu_sec_diff());
 	}
 	else
 	{
@@ -158,7 +158,7 @@ void ScaleBiasLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, c
 		int height = bottom[0]->height();
 		int width = bottom[0]->width();
 				
-		backward_kernel_data<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+		backward_kernel_data<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 		(bottom[0]->count(), channels, height*width, bottom[0]->gpu_sec_diff(), this->blobs_[0]->gpu_data(), this->blobs_[1]->gpu_data(), top[0]->mutable_gpu_sec_diff());
 	
 		if (this->lr_mult()[0] > 0 && this->lr_mult()[1] > 0 && Caffe::frozen_param() == false)
@@ -169,5 +169,5 @@ void ScaleBiasLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, c
 	*/	
 	}
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ScaleBiasLayer);
+
 }  // namespace caffe

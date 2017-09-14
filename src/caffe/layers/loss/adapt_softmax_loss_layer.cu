@@ -8,20 +8,20 @@
 
 namespace caffe {
 
-template <typename Dtype>
+
 static int qcompare(const void * a, const void * b)
 {
-   return *(Dtype*)a - *(Dtype*)b;
+   return *(float*)a - *(float*)b;
 }
 
-template <typename Dtype>
-static int compare(Dtype a, Dtype b)
+
+static int compare(float a, float b)
 {
    return a < b;
 }
 
-template <typename Dtype>
-static __global__ void sample_kernel(int count, int num, int channels, int height, int width, const Dtype * score, const Dtype * label,const int ignore_label, Dtype * temp_prob, Dtype * num_compute)
+
+static __global__ void sample_kernel(int count, int num, int channels, int height, int width, const float * score, const float * label,const int ignore_label, float * temp_prob, float * num_compute)
 {
 	CUDA_KERNEL_LOOP(index, count) 
 	{
@@ -42,8 +42,8 @@ static __global__ void sample_kernel(int count, int num, int channels, int heigh
 	}	
 }
 
-template <typename Dtype>
-static __global__ void flag_kernel(int count, int num, int channels, int height, int width, const Dtype * score, const Dtype * label, Dtype threshold, const int ignore_label, Dtype * flag)
+
+static __global__ void flag_kernel(int count, int num, int channels, int height, int width, const float * score, const float * label, float threshold, const int ignore_label, float * flag)
 {
 	CUDA_KERNEL_LOOP(index, count) 
 	{
@@ -58,12 +58,12 @@ static __global__ void flag_kernel(int count, int num, int channels, int height,
 	}	
 }
 
-template <typename Dtype>
+
 static __global__ void SoftmaxLossForwardGPU(const int nthreads,
-          const Dtype* prob_data, const Dtype* label, Dtype* loss,
+          const float* prob_data, const float* label, float* loss,
           const int num, const int channels, const int height, const int width,
-          const bool has_ignore_label_, const int ignore_label_, const Dtype * flag,
-          Dtype* counts) {
+          const bool has_ignore_label_, const int ignore_label_, const float * flag,
+          float* counts) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     int n = index / width / height;
 		int h = index / width % height;
@@ -82,16 +82,16 @@ static __global__ void SoftmaxLossForwardGPU(const int nthreads,
     		return;
     	}
     	
-      loss[index] = - logf(max(prob_data[( (n * channels + label_value ) * height + h) * width + w], Dtype(FLT_MIN)));
+      loss[index] = - logf(max(prob_data[( (n * channels + label_value ) * height + h) * width + w], float(FLT_MIN)));
       counts[index] = 1;
     }
   }
 }
-template <typename Dtype>
-static __global__ void SoftmaxLossBackwardGPU(const int nthreads, const Dtype* top,const Dtype *prob_data,
-          const Dtype* label, Dtype* bottom_diff, const int num, const int channels,
+
+static __global__ void SoftmaxLossBackwardGPU(const int nthreads, const float* top,const float *prob_data,
+          const float* label, float* bottom_diff, const int num, const int channels,
           const int height, const int width, const bool has_ignore_label_,
-          const int ignore_label_,const Dtype * flag, Dtype* counts) 
+          const int ignore_label_,const float * flag, float* counts) 
 {
   CUDA_KERNEL_LOOP(index, nthreads) 
   {
@@ -113,8 +113,8 @@ static __global__ void SoftmaxLossBackwardGPU(const int nthreads, const Dtype* t
   }
 }
 
-template <typename Dtype>
-void AdaptSoftmaxWithLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void AdaptSoftmaxWithLossLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {	  
     
   softmax_layer_->Forward_gpu(softmax_bottom_vec_, softmax_top_vec_);
@@ -122,25 +122,25 @@ void AdaptSoftmaxWithLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
 
   if (has_ignore_label_) 
   {
-		sample_kernel<Dtype><<<CAFFE_GET_BLOCKS(temp_prob.count()),CAFFE_CUDA_NUM_THREADS>>>
+		sample_kernel<<<CAFFE_GET_BLOCKS(temp_prob.count()),CAFFE_CUDA_NUM_THREADS>>>
 		(temp_prob.count(), temp_prob.num(), prob_.channels(), temp_prob.height(), temp_prob.width(),prob_.gpu_data(), bottom[1]->gpu_data(), ignore_label_, 
 																																														temp_prob.mutable_gpu_data(),sub_counts_.mutable_gpu_data());	
 	}
 	else
 		LOG(FATAL)<<"what is the igore_label?";	
 	 
-	Dtype count;
+	float count;
 	caffe_gpu_asum(sub_counts_.count(),sub_counts_.gpu_data(),&count);
-  std::sort(temp_prob.mutable_cpu_data(),temp_prob.mutable_cpu_data() + temp_prob.count(),compare<Dtype>);
+  std::sort(temp_prob.mutable_cpu_data(),temp_prob.mutable_cpu_data() + temp_prob.count(),compare);
   
   
 	int index = floor(count * portion); 
 	index = std::min(temp_prob.count()-1,index);
-	Dtype threshold = temp_prob.cpu_data()[index];
+	float threshold = temp_prob.cpu_data()[index];
 	
 	//LOG(INFO)<<"threshold = "<<threshold<<" index = "<<index;
 	
-  flag_kernel<Dtype><<<CAFFE_GET_BLOCKS(flag.count()),CAFFE_CUDA_NUM_THREADS>>>
+  flag_kernel<<<CAFFE_GET_BLOCKS(flag.count()),CAFFE_CUDA_NUM_THREADS>>>
   (flag.count(), flag.num(), prob_.channels(), flag.height(), flag.width(), prob_.gpu_data(),bottom[1]->gpu_data(), threshold, ignore_label_, flag.mutable_gpu_data());
 	CUDA_POST_KERNEL_CHECK;
   
@@ -150,17 +150,17 @@ void AdaptSoftmaxWithLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
   //	CHECK_EQ(flag.cpu_data()[i],1);
   //}
   
-  const Dtype* prob_data = prob_.gpu_data();
-  const Dtype* label = bottom[1]->gpu_data();
-  Dtype* loss_data = loss_.mutable_gpu_data();
-  Dtype * count_data = counts_.mutable_gpu_data();
-  SoftmaxLossForwardGPU<Dtype><<<CAFFE_GET_BLOCKS(bottom[1]->count()),CAFFE_CUDA_NUM_THREADS>>>
+  const float* prob_data = prob_.gpu_data();
+  const float* label = bottom[1]->gpu_data();
+  float* loss_data = loss_.mutable_gpu_data();
+  float * count_data = counts_.mutable_gpu_data();
+  SoftmaxLossForwardGPU<<<CAFFE_GET_BLOCKS(bottom[1]->count()),CAFFE_CUDA_NUM_THREADS>>>
   (bottom[1]->count(), prob_data, label, loss_data,
   bottom[0]->num(), bottom[0]->channels(), bottom[0]->height(), bottom[0]->width(),
   has_ignore_label_, ignore_label_,flag.gpu_data(), count_data);
   CUDA_POST_KERNEL_CHECK;
   
-  Dtype loss;
+  float loss;
   caffe_gpu_asum(bottom[1]->count(), loss_data, &loss);
   
   caffe_gpu_asum(bottom[1]->count(), count_data, &count);
@@ -176,36 +176,36 @@ void AdaptSoftmaxWithLossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
 	
 }
 
-template <typename Dtype>
-void AdaptSoftmaxWithLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void AdaptSoftmaxWithLossLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
     
-    Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
-    caffe_gpu_set(bottom[0]->count(),Dtype(0),bottom_diff);
-    const Dtype* prob_data = prob_.gpu_data();
-    const Dtype* top_data = top[0]->gpu_data();
+    float* bottom_diff = bottom[0]->mutable_gpu_diff();
+    caffe_gpu_set(bottom[0]->count(),float(0),bottom_diff);
+    const float* prob_data = prob_.gpu_data();
+    const float* top_data = top[0]->gpu_data();
     caffe_copy(prob_.count(), prob_data, bottom_diff);
-    const Dtype* label = bottom[1]->gpu_data();
-    Dtype* count_data = counts_.mutable_gpu_data();
-    SoftmaxLossBackwardGPU<Dtype><<<CAFFE_GET_BLOCKS(bottom[1]->count()),CAFFE_CUDA_NUM_THREADS>>>
+    const float* label = bottom[1]->gpu_data();
+    float* count_data = counts_.mutable_gpu_data();
+    SoftmaxLossBackwardGPU<<<CAFFE_GET_BLOCKS(bottom[1]->count()),CAFFE_CUDA_NUM_THREADS>>>
     (bottom[1]->count(), top_data,prob_data, label, bottom_diff,
     bottom[0]->num(), bottom[0]->channels(), bottom[0]->height(), bottom[0]->width(), 
     has_ignore_label_, ignore_label_,flag.gpu_data(), count_data);
     CUDA_POST_KERNEL_CHECK;
     
-    const Dtype loss_weight = top[0]->cpu_diff()[0];
+    const float loss_weight = top[0]->cpu_diff()[0];
  
-    Dtype count;
+    float count;
     caffe_gpu_asum(bottom[1]->count(), count_data, &count);
     if (count > 0) 
       caffe_gpu_scal(prob_.count(), loss_weight / count, bottom_diff);
 }
 
-template <typename Dtype>
-void AdaptSoftmaxWithLossLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void AdaptSoftmaxWithLossLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {	  
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(AdaptSoftmaxWithLossLayer);
+
 
 }  // namespace caffe

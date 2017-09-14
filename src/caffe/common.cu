@@ -12,7 +12,7 @@ shared_ptr<Caffe> Caffe::singleton_;
 
 std::vector<int> Caffe::GPUs;
 int Caffe::number_collect_sample = -1;
-
+vector<float *> Caffe::gpu_scalar_;
 
 vector<void *> Caffe::workspace_;
 vector<void *> Caffe::parallel_workspace_;
@@ -30,17 +30,13 @@ ncclComm_t* Caffe::comms_;
 string Caffe::drop_state_ = "rand";
 string Caffe::bn_state_ = "learned";
 string Caffe::gan_type_ = "train_dnet";
+string Caffe::gradient_penalty_ = "No";
 bool Caffe::frozen_param_ = false;
 bool Caffe::second_pass_ = false;
 bool Caffe::reuse_ = false;
 
-
 rng_t * Caffe::rng_;
 //--------------------------------------------------------
-
-
-
-
 
 void GlobalInit(int* pargc, char*** pargv) {
     // Google flags.
@@ -90,11 +86,8 @@ Caffe::Caffe()
   	
     for(int i=0;i<GPUs.size();i++)
     {
-      CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));
-     	
-     	
+      CUDA_CHECK(cudaSetDevice(Caffe::GPUs[i]));    	     	
 			CUDNN_CHECK(cudnnCreate(&cudnn_handle_[i]));  
-
 			cublasCreate(&cublas_handle_[i]);
 			
 			
@@ -104,9 +97,14 @@ Caffe::Caffe()
     CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
       
 		rng_ = new rng_t(cluster_seedgen());
+		
+		gpu_scalar_.resize(NGPUS);
+		for (int i=0;i<NGPUS;i++)		
+			cudaMalloc((void**) &gpu_scalar_[i], sizeof(float));
 }
 Caffe::~Caffe() 
 {
+	//cudaFree(gpu_scalar);
 //never delete static variables!!!!!!!!!!!!!!!!!
 }
 //----------------------------------------
@@ -114,6 +112,8 @@ bool Caffe::compare_variable(string var_name, string var_value)
 {
 	if (var_name == "gan_type")
 		return gan_type() == var_value;	
+	else if (var_name == "gradient_penalty")
+		return gradient_penalty() == var_value;	
 	else
 	{
 		LOG(FATAL)<<"unknown variable "<<var_name;

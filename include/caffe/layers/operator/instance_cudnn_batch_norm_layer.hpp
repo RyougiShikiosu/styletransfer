@@ -12,20 +12,20 @@ namespace caffe {
 
 
 
-template <typename Dtype>
-class InstanceCuDNNBatchNormLayer : public Layer<Dtype> {
+
+class InstanceCuDNNBatchNormLayer : public Layer {
  public:
-  explicit InstanceCuDNNBatchNormLayer(const LayerParameter& param) : Layer<Dtype>(param), handles_setup_(false)  {}
+  explicit InstanceCuDNNBatchNormLayer(const LayerParameter& param) : Layer(param), handles_setup_(false)  {}
   virtual ~InstanceCuDNNBatchNormLayer();
 	virtual inline const char* type() const { return "InstanceCuDNNBatchNorm"; }
 
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,   const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top,   const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
  	
 	
@@ -38,10 +38,10 @@ class InstanceCuDNNBatchNormLayer : public Layer<Dtype> {
   cudnnTensorDescriptor_t top_desc_;
   cudnnTensorDescriptor_t scale_bias_desc_;
   
-  Blob<Dtype> weights;
-  Blob<Dtype> bias;
-  Blob<Dtype> savedmean;
-  Blob<Dtype> savedinvvariance;  
+  Blob weights;
+  Blob bias;
+  Blob savedmean;
+  Blob savedinvvariance;  
   
   
   int num_;

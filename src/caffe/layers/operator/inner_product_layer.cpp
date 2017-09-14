@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void InnerProductLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -27,8 +27,8 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, co
     else
       this->blobs_.resize(1);
     
-    this->blobs_[0].reset(new Blob<Dtype>(num_output,channels*height*width,1,1));
-    shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(this->layer_param_.inner_product_param().weight_filler()));
+    this->blobs_[0].reset(new Blob(num_output,channels*height*width,1,1));
+    shared_ptr<Filler > weight_filler(GetFiller(this->layer_param_.inner_product_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
 
     if (this->lr_mult().size() == 0)
@@ -38,8 +38,8 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, co
     }	
     if (this->layer_param_.inner_product_param().bias_term())
     {
-      this->blobs_[1].reset(new Blob<Dtype>(num_output,1,1,1));
-      caffe_set(this->blobs_[1]->count(),Dtype(0),this->blobs_[1]->mutable_cpu_data());
+      this->blobs_[1].reset(new Blob(num_output,1,1,1));
+      caffe_set(this->blobs_[1]->count(),float(0),this->blobs_[1]->mutable_cpu_data());
 
       if (this->lr_mult().size() == 1)
     	{
@@ -52,25 +52,25 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, co
   if (this->layer_param_.inner_product_param().bias_term())
   {
     bias_multiplier_.Reshape(num,1,1,1);
-    caffe_set(num, Dtype(1), bias_multiplier_.mutable_cpu_data());
+    caffe_set(num, float(1), bias_multiplier_.mutable_cpu_data());
   }
 }
 
-template <typename Dtype>
-void InnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void InnerProductLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   
   int num = bottom[0]->num();
   if (this->layer_param_.inner_product_param().bias_term())
   {
     bias_multiplier_.Reshape(num,1,1,1);
-    caffe_set(num, Dtype(1), bias_multiplier_.mutable_cpu_data());
+    caffe_set(num, float(1), bias_multiplier_.mutable_cpu_data());
   }
   top[0]->Reshape(num,num_output,1,1);
 }
 
 
-INSTANTIATE_CLASS(InnerProductLayer);
+
 REGISTER_LAYER_CLASS(InnerProduct);
 
 }  // namespace caffe

@@ -6,19 +6,19 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SoftmaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SoftmaxLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int channels = bottom[0]->channels();
 	
 	
 	sum_multiplier_.Reshape(1, channels, 1, 1);
-	caffe_set(sum_multiplier_.count(), Dtype(1), sum_multiplier_.mutable_cpu_data());
+	caffe_set(sum_multiplier_.count(), float(1), sum_multiplier_.mutable_cpu_data());
 }
 
 
-template <typename Dtype>
-void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SoftmaxLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -33,7 +33,6 @@ void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 
 
 
-INSTANTIATE_CLASS(SoftmaxLayer);
 REGISTER_LAYER_CLASS(Softmax);
 
 }  // namespace caffe

@@ -5,8 +5,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void LabelSperateLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void LabelSperateLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 #if 0
 	FILE*  fid = fopen("stuff36.txt","rb");
@@ -24,8 +24,8 @@ void LabelSperateLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, co
 #endif
 }
 
-template <typename Dtype>
-void LabelSperateLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void LabelSperateLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -54,7 +54,7 @@ void LabelSperateLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const
 
 
 
-INSTANTIATE_CLASS(LabelSperateLayer);
+
 REGISTER_LAYER_CLASS(LabelSperate);
 }  // namespace caffe
 		

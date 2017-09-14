@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void MaxLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void MaxLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void MaxLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void MaxLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	CHECK_EQ(bottom.size(),2);
 	int num = bottom[0]->num();
@@ -26,6 +26,6 @@ void MaxLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 	top[0]->Reshape(1,1,1,1);
 }
 
-INSTANTIATE_CLASS(MaxLossLayer);
+
 REGISTER_LAYER_CLASS(MaxLoss);
 }  // namespace caffe

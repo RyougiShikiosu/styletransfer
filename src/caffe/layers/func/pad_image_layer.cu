@@ -5,8 +5,8 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
-template <typename Dtype>
-static __global__ void pad_kernel(int count, int height,int width, int pad, const Dtype *in, Dtype *out)
+
+static __global__ void pad_kernel(int count, int height,int width, int pad, const float *in, float *out)
 {
 	CUDA_KERNEL_LOOP(i, count)
 	{
@@ -29,31 +29,31 @@ static __global__ void pad_kernel(int count, int height,int width, int pad, cons
 	}
 }
 
-template <typename Dtype>
-void PadImageLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void PadImageLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   int height = bottom[0]->height();
   int width = bottom[0]->width();
 	
-	pad_kernel<Dtype><<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+	pad_kernel<<<CAFFE_GET_BLOCKS(top[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(top[0]->count(),height,width, pad_, bottom[0]->gpu_data(),top[0]->mutable_gpu_data());
 #if 0
 FILE *fid = fopen("debug","wb");
-fwrite(top[0]->cpu_data(),sizeof(Dtype),top[0]->count(),fid);
+fwrite(top[0]->cpu_data(),sizeof(float),top[0]->count(),fid);
 fclose(fid);
 LOG(FATAL)<<height<<", "<<width;
 #endif		
 	
 }
 
-template <typename Dtype>
-void PadImageLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void PadImageLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	
 }
-template <typename Dtype>
-void PadImageLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void PadImageLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(PadImageLayer);
+
 }  // namespace caffe

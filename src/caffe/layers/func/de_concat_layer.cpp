@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void DeConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void DeConcatLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void DeConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void DeConcatLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	const int num = bottom[0]->num();
 	const int channels = bottom[0]->channels();
@@ -34,10 +34,7 @@ void DeConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(DeConcatLayer);
-#endif
 
-INSTANTIATE_CLASS(DeConcatLayer);
+
 REGISTER_LAYER_CLASS(DeConcat);
 }  // namespace caffe

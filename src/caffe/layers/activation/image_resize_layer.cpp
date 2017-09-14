@@ -10,14 +10,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ImageResizeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ImageResizeLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	interp_ratio = this->layer_param().interp_param().interp_ratio();
 }
 
-template <typename Dtype>
-void ImageResizeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ImageResizeLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -29,7 +29,7 @@ void ImageResizeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const 
 
 
 
-INSTANTIATE_CLASS(ImageResizeLayer);
+
 REGISTER_LAYER_CLASS(ImageResize);
 }  // namespace caffe
 		

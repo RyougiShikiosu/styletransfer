@@ -10,16 +10,16 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ImresizeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ImresizeLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	stride = this->layer_param().interp_param().stride();
 	kernel_size = this->layer_param().interp_param().kernel_size();
 	num_classes = this->layer_param().interp_param().num_classes();
 }
 
-template <typename Dtype>
-void ImresizeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ImresizeLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int height = bottom[0]->height();
@@ -35,7 +35,6 @@ void ImresizeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 }
 
 
-INSTANTIATE_CLASS(ImresizeLayer);
 REGISTER_LAYER_CLASS(Imresize);
 }  // namespace caffe
 		

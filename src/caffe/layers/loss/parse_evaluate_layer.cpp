@@ -4,9 +4,9 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ParseEvaluateLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+
+void ParseEvaluateLayer::LayerSetUp(
+    const vector<Blob*>& bottom, const vector<Blob*>& top) {
   const ParseEvaluateParameter& parse_evaluate_param =
       this->layer_param_.parse_evaluate_param();
   CHECK(parse_evaluate_param.has_num_labels()) << "Must have num_labels!!";
@@ -18,9 +18,9 @@ void ParseEvaluateLayer<Dtype>::LayerSetUp(
   }
 }
 
-template <typename Dtype>
-void ParseEvaluateLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+
+void ParseEvaluateLayer::Reshape(
+    const vector<Blob*>& bottom, const vector<Blob*>& top) {
   CHECK_EQ(bottom[0]->num(), bottom[1]->num())
       << "The data and label should have the same number.";
   CHECK_EQ(bottom[0]->channels(), bottom[1]->channels());
@@ -32,7 +32,7 @@ void ParseEvaluateLayer<Dtype>::Reshape(
 
 
 
-INSTANTIATE_CLASS(ParseEvaluateLayer);
+
 REGISTER_LAYER_CLASS(ParseEvaluate);
 
 }  // namespace caffe

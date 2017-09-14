@@ -6,17 +6,17 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void StyleLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void StyleLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
-	buffer_0_ = new Blob<Dtype>();
-	buffer_1_ = new Blob<Dtype>();
-	buffer_delta_ = new Blob<Dtype>();
-	buffer_square_ = new Blob<Dtype>();
+	buffer_0_ = new Blob();
+	buffer_1_ = new Blob();
+	buffer_delta_ = new Blob();
+	buffer_square_ = new Blob();
 }
 
-template <typename Dtype>
-void StyleLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void StyleLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -31,6 +31,6 @@ void StyleLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const ve
 }
 
 
-INSTANTIATE_CLASS(StyleLossLayer);
+
 REGISTER_LAYER_CLASS(StyleLoss);
 }  // namespace caffe

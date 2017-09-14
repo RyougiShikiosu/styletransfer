@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ConcatNumLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ConcatNumLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	
 }
 
-template <typename Dtype>
-void ConcatNumLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ConcatNumLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
  	int num0 = bottom[0]->num();
  	int num1 = bottom[1]->num();
@@ -37,6 +37,6 @@ void ConcatNumLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const ve
 }
 
 
-INSTANTIATE_CLASS(ConcatNumLayer);
+
 REGISTER_LAYER_CLASS(ConcatNum);
 }  // namespace caffe

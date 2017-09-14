@@ -35,6 +35,7 @@ message Datum {
   // Optionally, the datum could also hold float data.
   repeated float float_data = 6;
   optional bool encoded = 7 [default = false];
+  repeated int32 multi_label = 8;
 }
 
 message FillerParameter {
@@ -100,6 +101,8 @@ message TransformationParameter {
 message ParamSpec {
   optional float lr_mult = 1;
   optional float decay_mult = 2;
+  optional float weight_norm = 3;
+  optional float weight_penalty = 4 [default = 0];
 }
 message LayerProp {
   optional float loss_weight = 2 [default = 0];
@@ -329,7 +332,9 @@ message SolverParameter {
 
 	
 	optional string d_interp_net = 110;
-	optional NetParameter d_interp_param = 111;
+	optional string d_aux_net = 111;
+	optional NetParameter d_interp_param = 112;
+	optional NetParameter d_aux_param = 113;
 }
 
 

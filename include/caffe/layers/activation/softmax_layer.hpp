@@ -14,24 +14,24 @@ namespace caffe {
  *
  * TODO(dox): thorough documentation for Forward, Backward, and proto params.
  */
-template <typename Dtype>
-class SoftmaxLayer : public Layer<Dtype> {
+
+class SoftmaxLayer : public Layer {
  public:
-  explicit SoftmaxLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit SoftmaxLayer(const LayerParameter& param): Layer(param) {}
 
 
   virtual inline const char* type() const { return "Softmax"; }
  	
- 	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
- 	virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+ 	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+ 	virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
   
 
-  Blob<Dtype> sum_multiplier_;
-  Blob<Dtype> scale_;
+  Blob sum_multiplier_;
+  Blob scale_;
 };
 
 }  // namespace caffe

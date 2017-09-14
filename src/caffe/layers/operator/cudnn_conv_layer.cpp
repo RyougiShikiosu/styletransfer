@@ -8,8 +8,8 @@ namespace caffe {
 #define CUDNN_STREAMS 3
 
 
-template <typename Dtype>
-void CuDNNConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void CuDNNConvolutionLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -18,32 +18,32 @@ void CuDNNConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom
 			break;
 	gpu_id_ = i;
 	
-  ConvolutionLayer<Dtype>::LayerSetUp(bottom, top);
+  ConvolutionLayer::LayerSetUp(bottom, top);
 	
 	iter_ = 0;
 //----------------------------------------	
 	myworkspace_.resize(1);
-	myworkspace_[0] = static_cast<Blob<Dtype> *>(Caffe::parallel_workspace_[gpu_id_]);
+	myworkspace_[0] = static_cast<Blob *>(Caffe::parallel_workspace_[gpu_id_]);
 //----------------------------------------	
 
 
-  cudnn::createFilterDesc<Dtype>(&filter_desc_,
+  cudnn::createFilterDesc(&filter_desc_,
       this->num_output_, this->channels_/this->group_, this->kernel_size_, this->kernel_size_);
   if (this->layer_param_.convolution_param().bias_term()) 
   {
-    cudnn::createTensor4dDesc<Dtype>(&bias_desc_);
-   	cudnn::setTensor4dDesc<Dtype>(&bias_desc_, 1, this->num_output_, 1, 1); 
+    cudnn::createTensor4dDesc(&bias_desc_);
+   	cudnn::setTensor4dDesc(&bias_desc_, 1, this->num_output_, 1, 1); 
   } 
 
-  cudnn::createTensor4dDesc<Dtype>(&bottom_descs_);
-  cudnn::createTensor4dDesc<Dtype>(&top_descs_);
-  cudnn::createConvolutionDesc<Dtype>(&conv_descs_);      
+  cudnn::createTensor4dDesc(&bottom_descs_);
+  cudnn::createTensor4dDesc(&top_descs_);
+  cudnn::createConvolutionDesc(&conv_descs_);      
 }
 
-template <typename Dtype>
-void CuDNNConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void CuDNNConvolutionLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-  ConvolutionLayer<Dtype>::Reshape(bottom, top);
+  ConvolutionLayer::Reshape(bottom, top);
 
   const int num = bottom[0]->num();
   const int channels = bottom[0]->channels();
@@ -52,12 +52,12 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, c
   const int height_out = top[0]->height();
   const int width_out = top[0]->width();
 
-	cudnn::setTensor4dDesc<Dtype>(&bottom_descs_,
+	cudnn::setTensor4dDesc(&bottom_descs_,
 		    num, this->channels_, height, width);
-	cudnn::setTensor4dDesc<Dtype>(&top_descs_,
+	cudnn::setTensor4dDesc(&top_descs_,
 		    num, this->num_output_, height_out, width_out);  
 
-	cudnn::setConvolutionDesc<Dtype>(&conv_descs_, 
+	cudnn::setConvolutionDesc(&conv_descs_, 
 		    this->pad_, this->pad_, this->stride_, this->stride_, this->filter_stride_, this->filter_stride_, this->group_);
   //set the max work space data in case of RUNOUT of memory
   //take 448 x 448 as a exemplar
@@ -122,17 +122,18 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, c
   //LOG(INFO)<<" fwd_algo_ = "<<fwd_algo_ <<" "
  // 					<<" bwd_filter_algo_ ="<<bwd_filter_algo_<<" "
   //					<<" bwd_data_algo_ = "<<bwd_data_algo_;    
+  
 //-----------------------------------------------------------------------------------------	
-	myworkspace_[0]->Reshape(workspace_fwd_sizes_/sizeof(Dtype)+1,1,1,1);
- 	myworkspace_[0]->Reshape(workspace_bwd_data_sizes_/sizeof(Dtype)+1,1,1,1);
- 	myworkspace_[0]->Reshape(workspace_bwd_filter_sizes_/sizeof(Dtype)+1,1,1,1);   
+	myworkspace_[0]->Reshape(workspace_fwd_sizes_/sizeof(float)+1,1,1,1);
+ 	myworkspace_[0]->Reshape(workspace_bwd_data_sizes_/sizeof(float)+1,1,1,1);
+ 	myworkspace_[0]->Reshape(workspace_bwd_filter_sizes_/sizeof(float)+1,1,1,1);   
  	myworkspace_[0]->gpu_data(); 
  	myworkspace_[0]->gpu_diff(); 
 //-----------------------------------------------------------------------------------------	   
        
 }
-template <typename Dtype>
-CuDNNConvolutionLayer<Dtype>::~CuDNNConvolutionLayer() 
+
+CuDNNConvolutionLayer::~CuDNNConvolutionLayer() 
 {
 
   CUDNN_CHECK(cudnnDestroyTensorDescriptor(bottom_descs_));
@@ -145,7 +146,7 @@ CuDNNConvolutionLayer<Dtype>::~CuDNNConvolutionLayer()
   CUDNN_CHECK(cudnnDestroyFilterDescriptor(filter_desc_));
 }
 
-INSTANTIATE_CLASS(CuDNNConvolutionLayer);
+
 REGISTER_LAYER_CLASS(CuDNNConvolution);
 }   // namespace caffe
 

@@ -11,15 +11,13 @@
 namespace caffe 
 {
 
-
-template <typename Dtype>
 class Solver
 {
  public:
  	Solver(){}
   static int iter() { return iter_; }
   static bool change_style() { return change_style_; }
-  void share_weight(const shared_ptr<Net<Dtype> > net_, const shared_ptr<Net<Dtype> > test_net_);
+  void share_weight(const shared_ptr<Net> net_, const shared_ptr<Net> test_net_);
  protected:
  
   static int iter_;

@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void TrivialLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TrivialLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	for (int i=0;i<bottom.size();i++)
 	{
@@ -16,8 +16,8 @@ void TrivialLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const 
 	}
 }
 
-template <typename Dtype>
-void TrivialLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void TrivialLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	for (int i=0;i<bottom.size();i++)
 	{
@@ -26,8 +26,8 @@ void TrivialLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const ve
 	}
 }
 
-template <typename Dtype>
-void TrivialLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TrivialLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	for (int i=0;i<bottom.size();i++)
 	{
@@ -36,5 +36,5 @@ void TrivialLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, con
 	}
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(TrivialLayer);
+
 }  // namespace caffe

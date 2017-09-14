@@ -8,8 +8,8 @@
 namespace caffe 
 {
 
-template <typename Dtype>
-void AccuracyLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void AccuracyLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
   top_k_ = this->layer_param_.accuracy_param().top_k();
 
@@ -18,9 +18,17 @@ void AccuracyLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const 
     ignore_label_ = this->layer_param_.accuracy_param().ignore_label();
 }
 
-template <typename Dtype>
-void AccuracyLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void AccuracyLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
+	int num = bottom[0]->num();
+  int channels = bottom[0]->channels();
+  int height = bottom[0]->height();
+  int width = bottom[0]->width();
+  
+  //bottom[0]->Reshape(num*channels/2,2,1,1);
+  //bottom[1]->Reshape(num*channels/2,1,1,1);
+  
   top[0]->Reshape(1,1,1,1);
 }
 
@@ -28,7 +36,7 @@ void AccuracyLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vec
 
 
 
-INSTANTIATE_CLASS(AccuracyLayer);
+
 REGISTER_LAYER_CLASS(Accuracy);
 
 }  // namespace caffe

@@ -3,8 +3,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ParallelBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParallelBatchNormLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (this->blobs_.size() == 4)
   	LOG(INFO)<<"skip initialization";
@@ -14,16 +14,13 @@ void ParallelBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& botto
     this->blobs_.resize(4);
     for(int i=0;i<this->blobs_.size();i++)
     {
-      this->blobs_[i].reset(new Blob<Dtype>());
+      this->blobs_[i].reset(new Blob());
       this->blobs_[i]->Reshape(1,K,1,1);
     }
-    //Dtype std = 0.02;
-    //caffe_rng_gaussian<Dtype>(this->blobs_[0]->count(), Dtype(1), std, this->blobs_[0]->mutable_cpu_data());
-    //caffe_rng_gaussian<Dtype>(this->blobs_[1]->count(), Dtype(0), std, this->blobs_[1]->mutable_cpu_data());
-    caffe_set(this->blobs_[0]->count(),Dtype(1),this->blobs_[0]->mutable_cpu_data());
-    caffe_set(this->blobs_[1]->count(),Dtype(0),this->blobs_[1]->mutable_cpu_data()); 
-    caffe_set(this->blobs_[2]->count(),Dtype(0),this->blobs_[2]->mutable_cpu_data());
-    caffe_set(this->blobs_[3]->count(),Dtype(1),this->blobs_[3]->mutable_cpu_data());
+    caffe_set(this->blobs_[0]->count(),float(1),this->blobs_[0]->mutable_cpu_data());
+    caffe_set(this->blobs_[1]->count(),float(0),this->blobs_[1]->mutable_cpu_data()); 
+    caffe_set(this->blobs_[2]->count(),float(0),this->blobs_[2]->mutable_cpu_data());
+    caffe_set(this->blobs_[3]->count(),float(1),this->blobs_[3]->mutable_cpu_data());
 		
 
 		if (this->layer_param_.param_size() == 2)
@@ -56,23 +53,23 @@ void ParallelBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& botto
 		this->parallel_blobs_[3*NGPUS] = this->blobs_[3];			
 		for (int i=1;i<NGPUS;i++)
 		{
-			this->parallel_blobs_[0*NGPUS+i].reset(new Blob<Dtype>(1,K,1,1));
-			this->parallel_blobs_[1*NGPUS+i].reset(new Blob<Dtype>(1,K,1,1));
-			this->parallel_blobs_[2*NGPUS+i].reset(new Blob<Dtype>(1,K,1,1));
-			this->parallel_blobs_[3*NGPUS+i].reset(new Blob<Dtype>(1,K,1,1));
+			this->parallel_blobs_[0*NGPUS+i].reset(new Blob(1,K,1,1));
+			this->parallel_blobs_[1*NGPUS+i].reset(new Blob(1,K,1,1));
+			this->parallel_blobs_[2*NGPUS+i].reset(new Blob(1,K,1,1));
+			this->parallel_blobs_[3*NGPUS+i].reset(new Blob(1,K,1,1));
 		}
   }
 	parallel_mean_buffer_.resize(NGPUS);
 	parallel_var_buffer_.resize(NGPUS);
   for (int i=0;i<NGPUS;i++)
 	{  	
-  	parallel_mean_buffer_[i]      = new Blob<Dtype>();
-  	parallel_var_buffer_[i]  = new Blob<Dtype>();		    
+  	parallel_mean_buffer_[i]      = new Blob();
+  	parallel_var_buffer_[i]  = new Blob();		    
 	}
 }
 
-template <typename Dtype>
-void ParallelBatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParallelBatchNormLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -91,8 +88,8 @@ void ParallelBatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, 
 	}
 }
 
-template <typename Dtype>
-ParallelBatchNormLayer<Dtype>::~ParallelBatchNormLayer() 
+
+ParallelBatchNormLayer::~ParallelBatchNormLayer() 
 {
 	for (int i=0;i<NGPUS;i++)
 	{
@@ -103,6 +100,6 @@ ParallelBatchNormLayer<Dtype>::~ParallelBatchNormLayer()
 	parallel_var_buffer_.clear();
 }
 
-INSTANTIATE_CLASS(ParallelBatchNormLayer);
+
 REGISTER_LAYER_CLASS(ParallelBatchNorm);
 }  // namespace caffe

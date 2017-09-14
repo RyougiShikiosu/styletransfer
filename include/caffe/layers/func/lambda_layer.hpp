@@ -11,22 +11,22 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class LambdaLayer : public Layer<Dtype> {
+
+class LambdaLayer : public Layer{
  public:
-  explicit LambdaLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit LambdaLayer(const LayerParameter& param): Layer(param) {}
   virtual inline const char* type() const { return "Lambda"; }
-	virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
   
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
  	
  	int gpu_id_;
- 	vector<shared_ptr<Layer<Dtype> > > all_layer_;
- 	vector< vector<Blob<Dtype>* > > unary_bottom_vec_;
+ 	vector<shared_ptr<Layer> > all_layer_;
+ 	vector< vector<Blob* > > unary_bottom_vec_;
  	int layer_index_;
 };
 

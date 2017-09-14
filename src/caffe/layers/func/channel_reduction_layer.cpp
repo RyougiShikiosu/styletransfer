@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ChannelReductionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ChannelReductionLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void ChannelReductionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ChannelReductionLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	const int num = bottom[0]->num();
 	const int channels = bottom[0]->channels();
@@ -23,6 +23,5 @@ void ChannelReductionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, c
 	top[0]->Reshape(num,channels/2,height,width);
 }
 
-INSTANTIATE_CLASS(ChannelReductionLayer);
 REGISTER_LAYER_CLASS(ChannelReduction);
 }  // namespace caffe

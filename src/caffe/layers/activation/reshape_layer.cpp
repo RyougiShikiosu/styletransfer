@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ReshapeLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	num_ = this->layer_param_.shape_param().num();
 	channels_ = this->layer_param_.shape_param().channels();
@@ -15,8 +15,8 @@ void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const v
 	width_ = this->layer_param_.shape_param().width();
 }
 
-template <typename Dtype>
-void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ReshapeLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
 	int channels = bottom[0]->channels();
@@ -36,6 +36,5 @@ void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 	}
 }
 
-INSTANTIATE_CLASS(ReshapeLayer);
 REGISTER_LAYER_CLASS(Reshape);
 }  // namespace caffe

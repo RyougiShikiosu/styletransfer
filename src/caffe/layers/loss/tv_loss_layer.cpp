@@ -6,8 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void TVLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void TVLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -17,14 +17,14 @@ void TVLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const ve
 	gpu_id_ = i;
 }
 
-template <typename Dtype>
-void TVLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TVLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	loss_.ReshapeLike(*bottom[0]);
 	top[0]->Reshape(1,1,1,1);
 }
 
 
-INSTANTIATE_CLASS(TVLossLayer);
+
 REGISTER_LAYER_CLASS(TVLoss);
 }  // namespace caffe

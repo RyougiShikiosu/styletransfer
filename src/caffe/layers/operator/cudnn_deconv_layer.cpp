@@ -8,8 +8,8 @@ namespace caffe {
 
 #define CUDNN_STREAMS 1
 
-template <typename Dtype>
-void CuDNNDeConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void CuDNNDeConvolutionLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -18,37 +18,37 @@ void CuDNNDeConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bott
 			break;
 	gpu_id_ = i;
 
-  DeConvolutionLayer<Dtype>::LayerSetUp(bottom, top);
+  DeConvolutionLayer::LayerSetUp(bottom, top);
 	
 //----------------------------------------	
 	myworkspace_.resize(1);
-	myworkspace_[0] = static_cast<Blob<Dtype> *>(Caffe::parallel_workspace_[gpu_id_]);
+	myworkspace_[0] = static_cast<Blob *>(Caffe::parallel_workspace_[gpu_id_]);
 //----------------------------------------	
 
 
   // Create filter descriptor.
 
 	
-	cudnn::createFilterDesc<Dtype>(&filter_desc_,
+	cudnn::createFilterDesc(&filter_desc_,
 	    this->channels_, this->num_output_/this->group_, this->kernel_size_, this->kernel_size_); 
 	// Tensor descriptor for bias.
   if (this->layer_param_.convolution_param().bias_term()) 
   {
-    cudnn::createTensor4dDesc<Dtype>(&bias_desc_);
-   	cudnn::setTensor4dDesc<Dtype>(&bias_desc_,
+    cudnn::createTensor4dDesc(&bias_desc_);
+   	cudnn::setTensor4dDesc(&bias_desc_,
       1, this->num_output_, 1, 1); 
   } 
 
 
-  cudnn::createTensor4dDesc<Dtype>(&bottom_descs_);
-  cudnn::createTensor4dDesc<Dtype>(&top_descs_);
-  cudnn::createConvolutionDesc<Dtype>(&conv_descs_);      
+  cudnn::createTensor4dDesc(&bottom_descs_);
+  cudnn::createTensor4dDesc(&top_descs_);
+  cudnn::createConvolutionDesc(&conv_descs_);      
 }
 
-template <typename Dtype>
-void CuDNNDeConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void CuDNNDeConvolutionLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
-  DeConvolutionLayer<Dtype>::Reshape(bottom, top);
+  DeConvolutionLayer::Reshape(bottom, top);
 
   const int num = bottom[0]->num();
   const int height = bottom[0]->height();
@@ -58,12 +58,12 @@ void CuDNNDeConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 
 
-	cudnn::setTensor4dDesc<Dtype>(&bottom_descs_,
+	cudnn::setTensor4dDesc(&bottom_descs_,
 	    num, this->channels_ , height, width);
-	cudnn::setTensor4dDesc<Dtype>(&top_descs_,
+	cudnn::setTensor4dDesc(&top_descs_,
 	    num, this->num_output_ , height_out, width_out);  
 	
-	cudnn::setConvolutionDesc<Dtype>(&conv_descs_, 
+	cudnn::setConvolutionDesc(&conv_descs_, 
 		    this->pad_, this->pad_, this->stride_, this->stride_, this->filter_stride_, this->filter_stride_, this->group_);
 		    
 
@@ -117,14 +117,14 @@ void CuDNNDeConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 			bwd_data_algo_, 
 			&workspace_bwd_data_sizes_) );   
 //-----------------------------------------------------------------------------------------	
-		myworkspace_[0]->Reshape(workspace_fwd_sizes_/sizeof(Dtype)+1,1,1,1);
-	 	myworkspace_[0]->Reshape(workspace_bwd_data_sizes_/sizeof(Dtype)+1,1,1,1);
-	 	myworkspace_[0]->Reshape(workspace_bwd_filter_sizes_/sizeof(Dtype)+1,1,1,1);    
+		myworkspace_[0]->Reshape(workspace_fwd_sizes_/sizeof(float)+1,1,1,1);
+	 	myworkspace_[0]->Reshape(workspace_bwd_data_sizes_/sizeof(float)+1,1,1,1);
+	 	myworkspace_[0]->Reshape(workspace_bwd_filter_sizes_/sizeof(float)+1,1,1,1);    
 //-----------------------------------------------------------------------------------------	     
 }
 
-template <typename Dtype>
-CuDNNDeConvolutionLayer<Dtype>::~CuDNNDeConvolutionLayer() 
+
+CuDNNDeConvolutionLayer::~CuDNNDeConvolutionLayer() 
 {
   cudnnDestroyTensorDescriptor(bottom_descs_);
   cudnnDestroyTensorDescriptor(top_descs_);
@@ -136,6 +136,6 @@ CuDNNDeConvolutionLayer<Dtype>::~CuDNNDeConvolutionLayer()
   cudnnDestroyFilterDescriptor(filter_desc_);
 }
 
-INSTANTIATE_CLASS(CuDNNDeConvolutionLayer);
+
 REGISTER_LAYER_CLASS(CuDNNDeConvolution);
 }   // namespace caffe

@@ -11,22 +11,22 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class RepmatLayer : public Layer<Dtype> {
+
+class RepmatLayer : public Layer {
  public:
-  explicit RepmatLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit RepmatLayer(const LayerParameter& param): Layer(param) {}
   
 
   virtual inline const char* type() const { return "Repmat"; }
 	
-	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom);
-  virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+	virtual void LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom);
+  virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
  	int gpu_id_;
- 	Blob<Dtype> * one_multiplier_;
+ 	Blob * one_multiplier_;
 };
 
 }  // namespace caffe

@@ -5,14 +5,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void ConcatLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ConcatLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	if (bottom.size() == 2)
 	{
@@ -52,7 +52,5 @@ void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vecto
 }
 
 
-
-INSTANTIATE_CLASS(ConcatLayer);
 REGISTER_LAYER_CLASS(Concat);
 }  // namespace caffe

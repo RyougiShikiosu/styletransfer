@@ -10,8 +10,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-SolverGAN<Dtype>::SolverGAN(const SolverParameter& param)
+
+SolverGAN::SolverGAN(const SolverParameter& param)
 {
   //---------------- initial train net -----------------------
   param_ = param;
@@ -21,11 +21,11 @@ SolverGAN<Dtype>::SolverGAN(const SolverParameter& param)
 	Caffe::set_bn_state(param_.bn_state());
 	Caffe::set_drop_state(param_.drop_state());
 	
-  vector<shared_ptr<Blob<Dtype> > > net_intput_blobs; 
+  vector<shared_ptr<Blob > > net_intput_blobs; 
   net_intput_blobs.clear();
   vector<std::string> net_intput_blob_names; 
   net_intput_blob_names.clear();
-  g_net_.reset(new Net<Dtype>(g_net_param, net_intput_blobs, net_intput_blob_names));
+  g_net_.reset(new Net(g_net_param, net_intput_blobs, net_intput_blob_names));
   g_net_->set_NetOptimizer(param_.g_net_opt());
   
 
@@ -39,14 +39,13 @@ SolverGAN<Dtype>::SolverGAN(const SolverParameter& param)
 	
   for (int i = 0;i < num_output_blobs; i++)
   {
-		net_intput_blobs[i].reset(new Blob<Dtype>());
-		net_intput_blobs[i]->ReshapeLike(*g_net_->output_blobs()[i]);
+		net_intput_blobs[i] = g_net_->output_blobs()[i];
 		net_intput_blob_names[i] = g_net_->blob_names()[g_net_->output_blob_indices()[i]]; 
 	}
 
   NetParameter d_net_param;
   ReadProtoFromTextFile(param_.d_net(), &d_net_param);
-  d_net_.reset(new Net<Dtype>(d_net_param, net_intput_blobs, net_intput_blob_names));
+  d_net_.reset(new Net(d_net_param, net_intput_blobs, net_intput_blob_names));
   d_net_->set_NetOptimizer(param_.d_net_opt());
 	
 	
@@ -55,8 +54,8 @@ SolverGAN<Dtype>::SolverGAN(const SolverParameter& param)
   this->iter_ = 0;
 }
 
-template <typename Dtype>
-void SolverGAN<Dtype>::Solve(const char* all_state_file) 
+
+void SolverGAN::Solve(const char* all_state_file) 
 {
   LOG(INFO) << "Solving Generative Adversial Networks";
 
@@ -68,12 +67,12 @@ void SolverGAN<Dtype>::Solve(const char* all_state_file)
   }
 
   start_iter_ = this->iter_;
-	std::vector<Dtype> g_loss;
-	std::vector<Dtype> d_loss;
+	std::vector<float> g_loss;
+	std::vector<float> d_loss;
 	g_loss.clear();
 	d_loss.clear();
-	Dtype cur_d_loss = 0;
-  Dtype cur_g_loss = 0;
+	float cur_d_loss = 0;
+  float cur_g_loss = 0;
   while (this->iter_ < param_.max_iter())
   {
     g_net_->ClearParamDiffs();
@@ -83,21 +82,13 @@ void SolverGAN<Dtype>::Solve(const char* all_state_file)
 		{	
 			Caffe::set_gan_type("train_dnet");			
 			g_net_->BcastData();
-			Caffe::set_reuse(true);
 			g_net_->Forward();
 
-			for (int ig = 0;ig < g_net_->output_blobs().size(); ig++)
-			{
-				CUDA_CHECK(cudaSetDevice(Caffe::GPUs[ig%NGPUS]));
-				d_net_->input_blobs()[ig]->ReshapeLike(*g_net_->output_blobs()[ig]);
-				caffe_copy(g_net_->output_blobs()[ig]->count(),g_net_->output_blobs()[ig]->gpu_data(),d_net_->input_blobs()[ig]->mutable_gpu_data());
-			}
-			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
+
 
 			d_net_->BcastData();
-			Caffe::set_reuse(false);
 			cur_d_loss = d_net_->Forward();	
-			Caffe::set_reuse(true);
+
 			d_net_->Backward();
 			d_net_->ReduceDiff();
 			
@@ -110,34 +101,21 @@ void SolverGAN<Dtype>::Solve(const char* all_state_file)
 //----------------------------------------------- 
 		Caffe::set_gan_type("train_gnet");		
 		//-----unecessary-------
-		Caffe::set_reuse(false);
 		g_net_->Forward();
 
-		for (int ig = 0;ig < g_net_->output_blobs().size(); ig++)
-		{	
-			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[ig%NGPUS]));
-			d_net_->input_blobs()[ig]->ReshapeLike(*g_net_->output_blobs()[ig]);
-			caffe_copy(g_net_->output_blobs()[ig]->count(),g_net_->output_blobs()[ig]->gpu_data(),d_net_->input_blobs()[ig]->mutable_gpu_data());
-		}
-		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
+
 
 
 		d_net_->BcastData();
-		Caffe::set_reuse(false);
 		cur_g_loss = d_net_->Forward();
 	
-		Caffe::set_reuse(true);
+
 		d_net_->Backward();
 		//-----unecessary-------
 
-		for (int ig = 0;ig < g_net_->output_blobs().size(); ig++)
-		{
-			CUDA_CHECK(cudaSetDevice(Caffe::GPUs[ig%NGPUS]));
-			caffe_copy(g_net_->output_blobs()[ig]->count(),d_net_->input_blobs()[ig]->gpu_diff(),g_net_->output_blobs()[ig]->mutable_gpu_diff());
-		}
-		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
+
 	
-		Caffe::set_reuse(true);
+
 		g_net_->Backward();
 		g_net_->ReduceDiff();
 
@@ -177,22 +155,22 @@ void SolverGAN<Dtype>::Solve(const char* all_state_file)
 }
 
 
-template <typename Dtype>
-void SolverGAN<Dtype>::dispaly_loss(std::vector<Dtype> g_loss,std::vector<Dtype> d_loss) 
+
+void SolverGAN::dispaly_loss(std::vector<float> g_loss,std::vector<float> d_loss) 
 {
 	LOG(INFO) << "Iteration " << this->iter_ << " ------------";
-	Dtype g_sum = 0;
+	float g_sum = 0;
 	for (int i=0;i<g_loss.size();i++)
 		g_sum += g_loss[i];
-	Dtype d_sum = 0;
+	float d_sum = 0;
 	for (int i=0;i<d_loss.size();i++)
 		d_sum += d_loss[i];
 	LOG(INFO) << " g_loss ="<< g_sum/g_loss.size()<<", d_loss ="<< d_sum/d_loss.size();
 }
 
 ///------------------------------------------------ proto <->  memory------------------------------------------------------
-template <typename Dtype>
-void SolverGAN<Dtype>::Snapshot() 
+
+void SolverGAN::Snapshot() 
 {
 //------------------------------
 	NetParameter g_net_param;
@@ -237,8 +215,8 @@ void SolverGAN<Dtype>::Snapshot()
 }
 
 
-template <typename Dtype>
-void SolverGAN<Dtype>::Restore(const char* all_state_file) 
+
+void SolverGAN::Restore(const char* all_state_file) 
 {
 	SolverState all_state;
 	ReadProtoFromBinaryFile(all_state_file, &all_state);
@@ -262,6 +240,5 @@ void SolverGAN<Dtype>::Restore(const char* all_state_file)
   d_net_->RestoreState(d_state.net_state());
 }
 
-INSTANTIATE_CLASS(SolverGAN);
 
 }  // namespace caffe

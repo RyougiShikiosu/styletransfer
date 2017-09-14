@@ -4,8 +4,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void CuDNNBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void CuDNNBatchNormLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 	CUDA_CHECK(cudaGetDevice(&gpu_id_));
 	int i;
@@ -14,12 +14,12 @@ void CuDNNBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, 
 			break;
 	gpu_id_ = i;
 	
-	mean_buffer_ = new Blob<Dtype>();
-	var_buffer_ = new Blob<Dtype>();
+	mean_buffer_ = new Blob();
+	var_buffer_ = new Blob();
 	
-  cudnn::createTensor4dDesc<Dtype>(&bottom_desc_);
-  cudnn::createTensor4dDesc<Dtype>(&top_desc_);
-  cudnn::createTensor4dDesc<Dtype>(&scale_bias_desc_);
+  cudnn::createTensor4dDesc(&bottom_desc_);
+  cudnn::createTensor4dDesc(&top_desc_);
+  cudnn::createTensor4dDesc(&scale_bias_desc_);
   
   
   if (this->blobs_.size() == 4)
@@ -30,16 +30,16 @@ void CuDNNBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, 
     this->blobs_.resize(4);
     for(int i=0;i<this->blobs_.size();i++)
     {
-      this->blobs_[i].reset(new Blob<Dtype>());
+      this->blobs_[i].reset(new Blob());
       this->blobs_[i]->Reshape(1,K,1,1);
     }
-    Dtype std = 0.02;
-    //caffe_rng_gaussian<Dtype>(this->blobs_[0]->count(), Dtype(1), std, this->blobs_[0]->mutable_cpu_data());
-    //caffe_rng_gaussian<Dtype>(this->blobs_[1]->count(), Dtype(0), std, this->blobs_[1]->mutable_cpu_data());
-    caffe_set(this->blobs_[0]->count(),Dtype(1),this->blobs_[0]->mutable_cpu_data());
-    caffe_set(this->blobs_[1]->count(),Dtype(0),this->blobs_[1]->mutable_cpu_data());
-    caffe_set(this->blobs_[2]->count(),Dtype(0),this->blobs_[2]->mutable_cpu_data());
-    caffe_set(this->blobs_[3]->count(),Dtype(1),this->blobs_[3]->mutable_cpu_data());
+    float std = 0.02;
+    //caffe_rng_gaussian(this->blobs_[0]->count(), float(1), std, this->blobs_[0]->mutable_cpu_data());
+    //caffe_rng_gaussian(this->blobs_[1]->count(), float(0), std, this->blobs_[1]->mutable_cpu_data());
+    caffe_set(this->blobs_[0]->count(),float(1),this->blobs_[0]->mutable_cpu_data());
+    caffe_set(this->blobs_[1]->count(),float(0),this->blobs_[1]->mutable_cpu_data());
+    caffe_set(this->blobs_[2]->count(),float(0),this->blobs_[2]->mutable_cpu_data());
+    caffe_set(this->blobs_[3]->count(),float(1),this->blobs_[3]->mutable_cpu_data());
 		
 
 		if (this->layer_param_.param_size() == 2)
@@ -66,8 +66,8 @@ void CuDNNBatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, 
   is_initialize = false;
 }
 
-template <typename Dtype>
-void CuDNNBatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void CuDNNBatchNormLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
   const int num = bottom[0]->num();
@@ -82,14 +82,14 @@ void CuDNNBatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, con
 	mean_buffer_->Reshape(1,channels,1,1);
   var_buffer_->Reshape(1,channels,1,1);
 
-  cudnn::setTensor4dDesc<Dtype>(&bottom_desc_, num, channels, height, width);
-  cudnn::setTensor4dDesc<Dtype>(&top_desc_, num, channels, height, width);
-  cudnn::setTensor4dDesc<Dtype>(&scale_bias_desc_,  1, channels, 1, 1);
+  cudnn::setTensor4dDesc(&bottom_desc_, num, channels, height, width);
+  cudnn::setTensor4dDesc(&top_desc_, num, channels, height, width);
+  cudnn::setTensor4dDesc(&scale_bias_desc_,  1, channels, 1, 1);
 
 }
 
-template <typename Dtype>
-CuDNNBatchNormLayer<Dtype>::~CuDNNBatchNormLayer() 
+
+CuDNNBatchNormLayer::~CuDNNBatchNormLayer() 
 {
 	cudnnDestroyTensorDescriptor(bottom_desc_);
 	cudnnDestroyTensorDescriptor(top_desc_);
@@ -99,6 +99,6 @@ CuDNNBatchNormLayer<Dtype>::~CuDNNBatchNormLayer()
 	delete var_buffer_;
 }
 
-INSTANTIATE_CLASS(CuDNNBatchNormLayer);
+
 REGISTER_LAYER_CLASS(CuDNNBatchNorm);
 }  // namespace caffe

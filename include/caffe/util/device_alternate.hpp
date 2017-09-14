@@ -9,23 +9,6 @@
 
 #define NO_GPU LOG(FATAL) << "Cannot use GPU in CPU-only Caffe: check mode."
 
-#define STUB_GPU(classname) \
-template <typename Dtype> \
-void classname<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, \
-    const vector<Blob<Dtype>*>& top) { NO_GPU; } \
-template <typename Dtype> \
-void classname<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, \
-    const vector<Blob<Dtype>*>& bottom) { NO_GPU; } \
-
-#define STUB_GPU_FORWARD(classname, funcname) \
-template <typename Dtype> \
-void classname<Dtype>::funcname##_##gpu(const vector<Blob<Dtype>*>& bottom, \
-    const vector<Blob<Dtype>*>& top) { NO_GPU; } \
-
-#define STUB_GPU_BACKWARD(classname, funcname) \
-template <typename Dtype> \
-void classname<Dtype>::funcname##_##gpu(const vector<Blob<Dtype>*>& top, \
-    const vector<Blob<Dtype>*>& bottom) { NO_GPU; } \
 
 #else  // Normal GPU + CPU Caffe.
 
@@ -98,7 +81,7 @@ const char* cublasGetErrorString(cublasStatus_t error);
 const char* curandGetErrorString(curandStatus_t error);
 
 // CUDA: use 512 threads per block
-const int CAFFE_CUDA_NUM_THREADS = 512;
+const int CAFFE_CUDA_NUM_THREADS = 1024;
 
 // CUDA: number of blocks for threads.
 inline int CAFFE_GET_BLOCKS(const int N) {

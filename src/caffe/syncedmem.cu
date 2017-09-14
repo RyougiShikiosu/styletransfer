@@ -25,52 +25,6 @@ SyncedMemory::~SyncedMemory()
   }
 }
 
-inline void SyncedMemory::to_cpu() 
-{
-  switch (head_) 
-  {
-  case UNINITIALIZED:
-    CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
-    caffe_memset(size_, 0, cpu_ptr_);
-    head_ = HEAD_AT_CPU;
-    break;
-  case HEAD_AT_GPU:
-    if (cpu_ptr_ == NULL) 
-      CaffeMallocHost(&cpu_ptr_, size_, &cpu_malloc_use_cuda_);
-
-    caffe_gpu_memcpy(size_, gpu_ptr_, cpu_ptr_);
-    head_ = SYNCED;
-    break;
-  case HEAD_AT_CPU:
-  case SYNCED:
-    break;
-  }
-}
-
-inline void SyncedMemory::to_gpu() 
-{
-  switch (head_) 
-  {
-  case UNINITIALIZED:
-    CUDA_CHECK(cudaGetDevice(&gpu_device_));
-    CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
-    caffe_gpu_memset(size_, 0, gpu_ptr_);
-    head_ = HEAD_AT_GPU;
-    break;
-  case HEAD_AT_CPU:
-    if (gpu_ptr_ == NULL) 
-    {
-      CUDA_CHECK(cudaGetDevice(&gpu_device_));
-      CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
-    }
-    caffe_gpu_memcpy(size_, cpu_ptr_, gpu_ptr_);
-    head_ = SYNCED;
-    break;
-  case HEAD_AT_GPU:
-  case SYNCED:
-    break;
-  }
-}
 
 const void* SyncedMemory::cpu_data() 
 {

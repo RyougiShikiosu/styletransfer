@@ -7,11 +7,11 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void im2col_cpu(const Dtype* data_im, const int channels,
+
+void im2col_cpu(const float* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int filter_stride_h, const int filter_stride_w, Dtype* data_col) {
+    const int filter_stride_h, const int filter_stride_w, float* data_col) {
   // effective kernel if we expand the filter_strides (trous)
   const int kernel_h_eff = kernel_h + (kernel_h - 1) * (filter_stride_h - 1);
   const int kernel_w_eff = kernel_w + (kernel_w - 1) * (filter_stride_w - 1);
@@ -36,22 +36,13 @@ void im2col_cpu(const Dtype* data_im, const int channels,
   }
 }
 
-// Explicit instantiation
-template void im2col_cpu<float>(const float* data_im, const int channels,
-    const int height, const int width, const int kernel_h, const int kernel_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int filter_stride_h, const int filter_stride_w, float* data_col);
-template void im2col_cpu<double>(const double* data_im, const int channels,
-    const int height, const int width, const int kernel_h, const int kernel_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int filter_stride_h, const int filter_stride_w, double* data_col);
 
-template <typename Dtype>
-void col2im_cpu(const Dtype* data_col, const int channels,
+
+void col2im_cpu(const float* data_col, const int channels,
     const int height, const int width, const int patch_h, const int patch_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int filter_stride_h, const int filter_stride_w, Dtype* data_im) {
-  caffe_set(height * width * channels, Dtype(0), data_im);
+    const int filter_stride_h, const int filter_stride_w, float* data_im) {
+  caffe_set(height * width * channels, float(0), data_im);
   const int patch_h_eff = patch_h + (patch_h - 1) * (filter_stride_h - 1);
   const int patch_w_eff = patch_w + (patch_w - 1) * (filter_stride_w - 1);
   int height_col = (height + 2 * pad_h - patch_h_eff) / stride_h + 1;
@@ -73,14 +64,5 @@ void col2im_cpu(const Dtype* data_col, const int channels,
   }
 }
 
-// Explicit instantiation
-template void col2im_cpu<float>(const float* data_col, const int channels,
-    const int height, const int width, const int patch_h, const int patch_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int filter_stride_h, const int filter_stride_w, float* data_im);
-template void col2im_cpu<double>(const double* data_col, const int channels,
-    const int height, const int width, const int patch_h, const int patch_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int filter_stride_h, const int filter_stride_w, double* data_im);
 
 }  // namespace caffe

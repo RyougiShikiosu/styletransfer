@@ -6,15 +6,15 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void EuclideanLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void EuclideanLossLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
-	buffer_delta_ = new Blob<Dtype>();
-	buffer_square_ = new Blob<Dtype>();
+	buffer_delta_ = new Blob();
+	buffer_square_ = new Blob();
 }
 
-template <typename Dtype>
-void EuclideanLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void EuclideanLossLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {	
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -28,6 +28,6 @@ void EuclideanLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, cons
 }
 
 
-INSTANTIATE_CLASS(EuclideanLossLayer);
+
 REGISTER_LAYER_CLASS(EuclideanLoss);
 }  // namespace caffe

@@ -6,23 +6,23 @@
 namespace caffe {
     
 
-template <typename Dtype>
-void SilenceLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SilenceLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	
 }
 
-template <typename Dtype>
-void SilenceLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void SilenceLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 
 		
 }
-template <typename Dtype>
-void SilenceLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SilenceLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	
 }
-INSTANTIATE_LAYER_GPU_FUNCS(SilenceLayer);
+
 }  // namespace caffe
 		

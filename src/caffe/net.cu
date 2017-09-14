@@ -18,13 +18,17 @@ using std::set;
 namespace caffe {
 
 
-template <typename Dtype>
-void Net<Dtype>::BcastData()
+
+void Net::BcastData()
 {	
 	if (NGPUS > 1)
   {
 		for (int i = 0; i < layers_.size(); i++)
 		{	
+			//boost::mutex::scoped_lock lock(mu);  
+			//i_layer = i;
+		 // if (i_layer > j_layer)
+			//	cond.notify_one();
 			for (int j = 0;j < layers_[i]->blobs().size();j++)
 			{			
 				for (int k = 0; k < NGPUS; k++) 
@@ -38,12 +42,18 @@ void Net<Dtype>::BcastData()
 		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
 		//-----------------------------------------
 	}
+	//i_layer++;
+	//cond.notify_one();
 }
-template <typename Dtype>
-void Net<Dtype>::ReduceDiff()
+
+void Net::ReduceDiff()
 {	
 	if (NGPUS > 1)
   {	
+  	//boost::mutex::scoped_lock lock(mu);  
+			//i_layer = i;
+			//if (i_layer <= j_layer)
+			//	cond.wait(mu);			  
 		for (int i = layers_.size() - 1; i >= 0; i--)
 		{						
 			for (int j = 0;j < layers_[i]->blobs().size();j++)
@@ -60,9 +70,4 @@ void Net<Dtype>::ReduceDiff()
 		CUDA_CHECK(cudaSetDevice(Caffe::GPUs[0]));
 	}
 }
-
-template void Net<float>::BcastData();
-template void Net<float>::ReduceDiff();
-template void Net<double>::BcastData();
-template void Net<double>::ReduceDiff();
 }  // namespace caffe

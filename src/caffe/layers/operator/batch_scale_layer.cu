@@ -6,12 +6,12 @@
 
 namespace caffe {
 
-template <typename Dtype>
-static __global__ void compute_max(int num, int channels, int spatial_dim, const Dtype *in, Dtype *out)
-{
-	__shared__ Dtype buffer[CAFFE_CUDA_NUM_THREADS];
 
-	buffer[threadIdx.x] = Dtype(-10000000.0);
+static __global__ void compute_max(int num, int channels, int spatial_dim, const float *in, float *out)
+{
+	__shared__ float buffer[CAFFE_CUDA_NUM_THREADS];
+
+	buffer[threadIdx.x] = float(-10000000.0);
 	for (int i = threadIdx.x; i < num * spatial_dim; i += blockDim.x) 
   {
     const int index = i / spatial_dim * channels * spatial_dim + blockIdx.x * spatial_dim + i % spatial_dim;
@@ -30,12 +30,12 @@ static __global__ void compute_max(int num, int channels, int spatial_dim, const
 		out[blockIdx.x] = buffer[0];
 }
 
-template <typename Dtype>
-static __global__ void compute_min(int num, int channels, int spatial_dim, const Dtype *in, Dtype *out)
-{
-	__shared__ Dtype buffer[CAFFE_CUDA_NUM_THREADS];
 
-	buffer[threadIdx.x] = Dtype(10000000.0);
+static __global__ void compute_min(int num, int channels, int spatial_dim, const float *in, float *out)
+{
+	__shared__ float buffer[CAFFE_CUDA_NUM_THREADS];
+
+	buffer[threadIdx.x] = float(10000000.0);
 	for (int i = threadIdx.x; i < num * spatial_dim; i += blockDim.x) 
   {
     const int index = i / spatial_dim * channels * spatial_dim + blockIdx.x * spatial_dim + i % spatial_dim;
@@ -54,11 +54,11 @@ static __global__ void compute_min(int num, int channels, int spatial_dim, const
 		out[blockIdx.x] = buffer[0];
 }
 
-template <typename Dtype>
-static __global__ void compute_sum_diff(int num, int channels, int spatial_dim, const Dtype *diff_out, const Dtype *in, Dtype *out, Dtype *out_x)
+
+static __global__ void compute_sum_diff(int num, int channels, int spatial_dim, const float *diff_out, const float *in, float *out, float *out_x)
 {
-	__shared__ Dtype buffer[CAFFE_CUDA_NUM_THREADS];
-	__shared__ Dtype buffer_x[CAFFE_CUDA_NUM_THREADS];
+	__shared__ float buffer[CAFFE_CUDA_NUM_THREADS];
+	__shared__ float buffer_x[CAFFE_CUDA_NUM_THREADS];
 	
 	buffer[threadIdx.x] = 0;
 	buffer_x[threadIdx.x] = 0;
@@ -87,27 +87,27 @@ static __global__ void compute_sum_diff(int num, int channels, int spatial_dim, 
 	}
 }
 
-template <typename Dtype>
-static __global__ void forward_kernel(int count, int channels,int spatial_dim, const Dtype *in, const Dtype *min_value, const Dtype * max_value, Dtype *out)
+
+static __global__ void forward_kernel(int count, int channels,int spatial_dim, const float *in, const float *min_value, const float * max_value, float *out)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
 	{
 		int c = i / spatial_dim % channels;
-		out[i] = (in[i] - min_value[c]) / (max_value[c] - min_value[c]) - Dtype(0.5);
+		out[i] = (in[i] - min_value[c]) / (max_value[c] - min_value[c]) - float(0.5);
 	}
 }
 
-template <typename Dtype>
-static __global__ void backward_kernel(int count, int channels,int spatial_dim, const Dtype *diff_out, 
-						const Dtype *min_value, const Dtype * max_value, const Dtype *sum, const Dtype *sum_x,
-						const Dtype * in,  Dtype *diff_in)
+
+static __global__ void backward_kernel(int count, int channels,int spatial_dim, const float *diff_out, 
+						const float *min_value, const float * max_value, const float *sum, const float *sum_x,
+						const float * in,  float *diff_in)
 {
 
 	CUDA_KERNEL_LOOP(i, count)
 	{
 		int c = i / spatial_dim % channels;
-		Dtype gap = max_value[c] - min_value[c];
+		float gap = max_value[c] - min_value[c];
 		if (in[i] != max_value[c] && in[i] != min_value[c])
 			diff_in[i] = diff_out[i] / gap;
 		else if (in[i] == max_value[c])
@@ -117,8 +117,8 @@ static __global__ void backward_kernel(int count, int channels,int spatial_dim, 
 	}
 }
 
-template <typename Dtype>
-void BatchScaleLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BatchScaleLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -132,15 +132,15 @@ void BatchScaleLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, con
 	(num, channels, height*width,bottom[0]->gpu_data(),this->blobs_[3]->mutable_gpu_data());
 	
 	
-	forward_kernel<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+	forward_kernel<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(bottom[0]->count(),channels,height*width,bottom[0]->gpu_data(),this->blobs_[2]->gpu_data(),this->blobs_[3]->gpu_data(),
 			top[0]->mutable_gpu_data());
 			
 	
 }
 
-template <typename Dtype>
-void BatchScaleLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void BatchScaleLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -154,7 +154,7 @@ void BatchScaleLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const
 	//LOG(ERROR)<<bottom[0]->cpu_data()[0]<<", "<<bottom[0]->cpu_data()[1]<<", "<<bottom[0]->cpu_data()[2];
 	//LOG(ERROR)<<top[0]->cpu_data()[0]<<", "<<top[0]->cpu_data()[1]<<", "<<top[0]->cpu_data()[2];
   
-	backward_kernel<Dtype><<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
+	backward_kernel<<<CAFFE_GET_BLOCKS(bottom[0]->count()), CAFFE_CUDA_NUM_THREADS>>>
 	(bottom[0]->count(),channels,height*width,top[0]->gpu_diff(),this->blobs_[2]->gpu_data(),this->blobs_[3]->gpu_data(), sum_.gpu_data(),sum_.gpu_diff(),
 			bottom[0]->gpu_data(), bottom[0]->mutable_gpu_diff());
 	
@@ -163,10 +163,10 @@ void BatchScaleLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const
 
 }
 
-template <typename Dtype>
-void BatchScaleLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void BatchScaleLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(BatchScaleLayer);
+
 }  // namespace caffe

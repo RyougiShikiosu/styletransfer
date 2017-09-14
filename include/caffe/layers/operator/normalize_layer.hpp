@@ -10,27 +10,27 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class NormalizeLayer : public Layer<Dtype> 
+
+class NormalizeLayer : public Layer 
 {
  public:
-  explicit NormalizeLayer(const LayerParameter& param): Layer<Dtype>(param) {}
+  explicit NormalizeLayer(const LayerParameter& param): Layer(param) {}
   virtual inline const char* type() const { return "Normalize"; }
   
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,  const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,     const vector<Blob<Dtype>*>& top);
+  virtual void LayerSetUp(const vector<Blob*>& bottom,  const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom,     const vector<Blob*>& top);
 
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
 
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,   const vector<Blob<Dtype>*>& bottom);
-	virtual void SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob*>& top,   const vector<Blob*>& bottom);
+	virtual void SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top);
  protected:
 
 
-  Blob<Dtype> norm_;
-  Blob<Dtype> sum_channel_multiplier_, sum_spatial_multiplier_;
-  Blob<Dtype> buffer_, buffer_channel_, buffer_spatial_;
-  Dtype eps_;
+  Blob norm_;
+  Blob sum_channel_multiplier_, sum_spatial_multiplier_;
+  Blob buffer_, buffer_channel_, buffer_spatial_;
+  float eps_;
 };
 
 }  // namespace caffe

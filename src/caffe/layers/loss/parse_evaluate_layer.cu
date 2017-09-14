@@ -4,15 +4,15 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ParseEvaluateLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParseEvaluateLayer::Forward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	  CHECK_EQ(bottom[0]->num(), bottom[1]->num());
   CHECK_EQ(bottom[0]->count(), bottom[1]->count());
-  const Dtype* bottom_pred = bottom[0]->cpu_data();
-  const Dtype* bottom_gt = bottom[1]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
-  caffe_set(top[0]->count(), Dtype(0), top_data);
+  const float* bottom_pred = bottom[0]->cpu_data();
+  const float* bottom_gt = bottom[1]->cpu_data();
+  float* top_data = top[0]->mutable_cpu_data();
+  caffe_set(top[0]->count(), float(0), top_data);
   int num = bottom[0]->num();
   int spatial_dim = bottom[0]->height() * bottom[0]->width();
   for (int i = 0; i < num; ++i) {
@@ -46,14 +46,14 @@ void ParseEvaluateLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, 
 	//LOG(FATAL)<<"-------------";
 }
 
-template <typename Dtype>
-void ParseEvaluateLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<Blob<Dtype>*>& bottom) 
+
+void ParseEvaluateLayer::Backward_gpu(const vector<Blob*>& top, const vector<Blob*>& bottom) 
 {
 }
-template <typename Dtype>
-void ParseEvaluateLayer<Dtype>::SecForward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void ParseEvaluateLayer::SecForward_gpu(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
-INSTANTIATE_LAYER_GPU_FUNCS(ParseEvaluateLayer);
+
 
 }  // namespace caffe

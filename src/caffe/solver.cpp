@@ -10,14 +10,11 @@
 
 namespace caffe {
 
-template <typename Dtype>
-int Solver<Dtype>::iter_;
 
-template <typename Dtype>
-bool Solver<Dtype>::change_style_;
+int Solver::iter_;
+bool Solver::change_style_;
 
-template <typename Dtype>
-void Solver<Dtype>::share_weight(const shared_ptr<Net<Dtype> > net_, const shared_ptr<Net<Dtype> > test_net_)
+void Solver::share_weight(const shared_ptr<Net> net_, const shared_ptr<Net > test_net_)
 {
 	for (int i = 0; i < test_net_->layers().size(); i++)
 	{
@@ -54,5 +51,5 @@ void Solver<Dtype>::share_weight(const shared_ptr<Net<Dtype> > net_, const share
 		}
 	}
 }
-INSTANTIATE_CLASS(Solver);
+
 }  // namespace caffe

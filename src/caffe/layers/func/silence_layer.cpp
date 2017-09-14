@@ -5,18 +5,17 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SilenceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void SilenceLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void SilenceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SilenceLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 }
 
-INSTANTIATE_CLASS(SilenceLayer);
 REGISTER_LAYER_CLASS(Silence);
 }  // namespace caffe
 		

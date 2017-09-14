@@ -6,14 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SeparateBlobLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void SeparateBlobLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 
 }
 
-template <typename Dtype>
-void SeparateBlobLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void SeparateBlobLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	int num = bottom[0]->num();
   int channels = bottom[0]->channels();
@@ -27,6 +27,6 @@ void SeparateBlobLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const
 }
 
 
-INSTANTIATE_CLASS(SeparateBlobLayer);
+
 REGISTER_LAYER_CLASS(SeparateBlob);
 }  // namespace caffe

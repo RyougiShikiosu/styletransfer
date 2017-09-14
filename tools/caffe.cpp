@@ -38,7 +38,10 @@ DEFINE_string(g_weights, "",
               "separated by ','. Cannot be set simultaneously with snapshot.");
 DEFINE_string(d_weights, "",
               "Optional; the pretrained d_weights to initialize finetuning, "
-              "separated by ','. Cannot be set simultaneously with snapshot.");              
+              "separated by ','. Cannot be set simultaneously with snapshot.");        
+DEFINE_string(d_aux_weights, "",
+              "Optional; the pretrained d_aux_weights to initialize finetuning, "
+              "separated by ','. Cannot be set simultaneously with snapshot.");          
 DEFINE_int32(iterations, 50,
              "The number of iterations to run.");
 
@@ -122,7 +125,7 @@ int train()
   ReadProtoFromTextFile(FLAGS_solver, &solver_param);
   if (solver_param.solver_type() == "CNN")
   {
-		shared_ptr<caffe::SolverCNN<float> > solver_cnn(new caffe::SolverCNN<float>(solver_param));
+		shared_ptr<caffe::SolverCNN > solver_cnn(new caffe::SolverCNN(solver_param));
 		if (FLAGS_snapshot.size())
 		{
 		  LOG(INFO) << "Resuming from " << FLAGS_snapshot;
@@ -147,7 +150,7 @@ int train()
 	}
 	else if (solver_param.solver_type() == "GAN")
 	{
-		shared_ptr<caffe::SolverGAN<float> > solver_gan(new caffe::SolverGAN<float>(solver_param));
+		shared_ptr<caffe::SolverGAN > solver_gan(new caffe::SolverGAN(solver_param));
 		if (FLAGS_snapshot.size())
 		{
 		  LOG(INFO) << "Resuming from " << FLAGS_snapshot;
@@ -177,7 +180,7 @@ int train()
 	}
 	else if (solver_param.solver_type() == "SecGAN")
 	{
-		shared_ptr<caffe::SolverSecGAN<float> > solver_gan(new caffe::SolverSecGAN<float>(solver_param));
+		shared_ptr<caffe::SolverSecGAN> solver_gan(new caffe::SolverSecGAN(solver_param));
 		if (FLAGS_snapshot.size())
 		{
 		  LOG(INFO) << "Resuming from " << FLAGS_snapshot;
@@ -205,6 +208,46 @@ int train()
 		solver_gan->Solve();
 		LOG(INFO) << "Optimization Done.";
 	}
+	else if (solver_param.solver_type() == "AuxSecGAN")
+	{
+		shared_ptr<caffe::SolverAuxSecGAN> solver_gan(new caffe::SolverAuxSecGAN(solver_param));
+		if (FLAGS_snapshot.size())
+		{
+		  LOG(INFO) << "Resuming from " << FLAGS_snapshot;
+		  solver_gan->Restore(FLAGS_snapshot.c_str());
+		}
+		else if (FLAGS_g_weights.size() || FLAGS_d_weights.size())
+		{
+			if (FLAGS_g_weights.size())
+			{
+				LOG(INFO) << "Finetuning from " << FLAGS_g_weights;
+				caffe::NetParameter g_net_param;
+				ReadProtoFromBinaryFile(FLAGS_g_weights, &g_net_param);
+				solver_gan->g_net()->CopyTrainedLayersFrom(g_net_param);
+			}
+			if (FLAGS_d_weights.size())
+			{
+				LOG(INFO) << "Finetuning from " << FLAGS_d_weights;
+				caffe::NetParameter d_net_param;
+				ReadProtoFromBinaryFile(FLAGS_d_weights, &d_net_param);
+				solver_gan->d_net()->CopyTrainedLayersFrom(d_net_param);
+		  }		  
+		}
+		
+		if (FLAGS_d_aux_weights.size())
+		{
+			LOG(INFO) << "Loading classifer " << FLAGS_d_weights;
+			caffe::NetParameter d_aux_net_param;
+			ReadProtoFromBinaryFile(FLAGS_d_aux_weights, &d_aux_net_param);
+			solver_gan->d_aux_net()->CopyTrainedLayersFrom(d_aux_net_param);
+		}
+		else
+			LOG(FATAL)<<"Auxiliary classifier is necessary!";		
+		
+		LOG(INFO) << "Starting Optimization";
+		solver_gan->Solve();
+		LOG(INFO) << "Optimization Done.";
+	}
 	else
 		LOG(FATAL)<<"wrong solver type";
 
@@ -218,84 +261,6 @@ RegisterBrewFunction(train);
 //----------------------------------------------------------------------  time --------------------------------------------------------
 int time()
 {
-  CHECK_GT(FLAGS_model.size(), 0) << "Need a model definition to time.";
-
-#ifndef CPU_ONLY
-  vector<int> gpus;
-  get_gpus(&gpus);
-
-  Caffe::GPUs.clear();
-  for (int i=0;i<gpus.size();i++)
-    Caffe::GPUs.push_back(gpus[i]);
-
-
-  if (gpus.size() != 0)
-    LOG(INFO) << "Use GPU with device ID " << gpus[0];
-#endif
-
-
-  caffe::NetParameter net_param;
-  ReadProtoFromTextFile(FLAGS_model, &net_param);
-  vector<shared_ptr<Blob<float> > > net_intput_blobs; 
-	net_intput_blobs.clear();
-	vector<std::string> net_intput_blob_names; 
-	net_intput_blob_names.clear();
-  Net<float> caffe_net(net_param,net_intput_blobs,net_intput_blob_names);
-
-
-
-  const vector<shared_ptr<Layer<float> > >& layers = caffe_net.layers();
-  const vector<vector<Blob<float>*> >& bottom_vecs = caffe_net.bottom_vecs();
-  const vector<vector<Blob<float>*> >& top_vecs = caffe_net.top_vecs();
-  LOG(INFO) << "*** Benchmark begins ***";
-  LOG(INFO) << "Testing for " << FLAGS_iterations << " iterations.";
-  Timer total_timer;
-  total_timer.Start();
-  Timer forward_timer;
-  Timer backward_timer;
-  Timer timer;
-  std::vector<double> forward_time_per_layer(layers.size(), 0.0);
-  std::vector<double> backward_time_per_layer(layers.size(), 0.0);
-  double forward_time = 0.0;
-  double backward_time = 0.0;
-  for (int j = 0; j < FLAGS_iterations; ++j)
-  {
-    Timer iter_timer;
-    iter_timer.Start();
-    forward_timer.Start();
-    for (int i = 0; i < layers.size(); ++i)
-    {
-      timer.Start();
-      layers[i]->Reshape(bottom_vecs[i], top_vecs[i]);
-      layers[i]->Forward(bottom_vecs[i], top_vecs[i]);
-      forward_time_per_layer[i] += timer.MicroSeconds();
-    }
-    forward_time += forward_timer.MicroSeconds();
-    backward_timer.Start();
-    for (int i = layers.size() - 1; i >= 0; --i)
-    {
-      timer.Start();
-      layers[i]->Backward(top_vecs[i], bottom_vecs[i]);
-      backward_time_per_layer[i] += timer.MicroSeconds();
-    }
-    backward_time += backward_timer.MicroSeconds();
-    LOG(INFO) << "Iteration: " << j + 1 << " forward-backward time: " << iter_timer.MilliSeconds() << " ms.";
-  }
-  LOG(INFO) << "Average time per layer: ";
-  for (int i = 0; i < layers.size(); ++i)
-  {
-    const caffe::string& layername = layers[i]->layer_param().name();
-    LOG(INFO) << std::setfill(' ') << std::setw(10) << layername << "\tforward: " << forward_time_per_layer[i] / 1000 / FLAGS_iterations << " ms.";
-    LOG(INFO) << std::setfill(' ') << std::setw(10) << layername  << "\tbackward: " << backward_time_per_layer[i] / 1000 / FLAGS_iterations << " ms.";
-  }
-  total_timer.Stop();
-  LOG(INFO) << "Average Forward pass: " << forward_time / 1000 / FLAGS_iterations << " ms.";
-  LOG(INFO) << "Average Backward pass: " << backward_time / 1000 / FLAGS_iterations << " ms.";
-  LOG(INFO) << "Average Forward-Backward: " << total_timer.MilliSeconds() / FLAGS_iterations << " ms.";
-  LOG(INFO) << "Total Time: " << total_timer.MilliSeconds() << " ms.";
-  LOG(INFO) << "*** Benchmark ends ***";
-
-  return 0;
 }
 RegisterBrewFunction(time);
 //----------------------------------------------------------------------------------------------------------------------------------------------------

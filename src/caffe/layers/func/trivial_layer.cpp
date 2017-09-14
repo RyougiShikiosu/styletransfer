@@ -6,13 +6,13 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void TrivialLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+
+void TrivialLayer::LayerSetUp(const vector<Blob*>& bottom, const vector<Blob*>& top)
 {
 }
 
-template <typename Dtype>
-void TrivialLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) 
+
+void TrivialLayer::Reshape(const vector<Blob*>& bottom, const vector<Blob*>& top) 
 {
 	for (int i=0;i<bottom.size();i++)
 	{
@@ -21,6 +21,6 @@ void TrivialLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom, const vect
 	}
 }
 
-INSTANTIATE_CLASS(TrivialLayer);
+
 REGISTER_LAYER_CLASS(Trivial);
 }  // namespace caffe

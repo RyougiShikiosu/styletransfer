@@ -15,8 +15,8 @@
 
 namespace caffe {
 
-template<typename Dtype>
-DataTransformer<Dtype>::DataTransformer(const TransformationParameter& param): param_(param)
+
+DataTransformer::DataTransformer(const TransformationParameter& param): param_(param)
 {
   // check if we want to use mean_value
   if (param_.mean_value_size() > 0) 
@@ -26,8 +26,8 @@ DataTransformer<Dtype>::DataTransformer(const TransformationParameter& param): p
   }
 }
 
-template<typename Dtype>
-void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img, Blob<Dtype>* transformed_blob)
+
+void DataTransformer::Transform(const cv::Mat& cv_img, Blob* transformed_blob)
 {
   const int crop_size = param_.crop_size();
   const bool alter_color = param_.alter_color();
@@ -63,11 +63,11 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img, Blob<Dtype>* trans
   alter_color_value[1]=0;
   alter_color_value[2]=0;
 #if 0
-	Dtype a0,a1,a2;
-	caffe_rng_gaussian<Dtype>(1, Dtype(0), Dtype(0.1), &a0);
-	caffe_rng_gaussian<Dtype>(1, Dtype(0), Dtype(0.1), &a1);
-	caffe_rng_gaussian<Dtype>(1, Dtype(0), Dtype(0.1), &a2);
-	Dtype range = 1000;
+	float a0,a1,a2;
+	caffe_rng_gaussian(1, float(0), float(0.1), &a0);
+	caffe_rng_gaussian(1, float(0), float(0.1), &a1);
+	caffe_rng_gaussian(1, float(0), float(0.1), &a2);
+	float range = 1000;
 	alter_color_value[0] = a0 * 0.2175 *  0.4009 * range + a1 * 0.0188 * -0.8140 * range + a2 * 0.0045 *  0.4203 * range;
 	alter_color_value[1] = a0 * 0.2175 *  0.7192 * range + a1 * 0.0188 * -0.0045 * range + a2 * 0.0045 * -0.6948 * range;
 	alter_color_value[2] = a0 * 0.2175 * -0.5675 * range + a1 * 0.0188 * -0.5808 * range + a2 * 0.0045 * -0.5836 * range;
@@ -121,7 +121,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img, Blob<Dtype>* trans
 	//LOG(INFO)<<"w_off = "<<w_off<<"crop_size = "<<crop_size<<" img_height = "<<img_height;
   CHECK(cv_cropped_img.data);
 
-  Dtype* transformed_data = transformed_blob->mutable_cpu_data();
+  float* transformed_data = transformed_blob->mutable_cpu_data();
   int top_index;
 
   for (int h = 0; h < height; ++h)
@@ -136,7 +136,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img, Blob<Dtype>* trans
         else
           top_index = (c * height + h) * width + w;
 
-        Dtype pixel = static_cast<Dtype>(ptr[img_index++]);
+        float pixel = static_cast<float>(ptr[img_index++]);
         if(do_alter_color[c])
           transformed_data[top_index] = pixel - mean_values_[c] + alter_color_value[c];
         else
@@ -147,15 +147,15 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img, Blob<Dtype>* trans
     #if 0
     FILE * fid = fopen("debug","wb");
     LOG(INFO)<<transformed_blob->height()<<", width = "<<transformed_blob->width();
-    fwrite(transformed_blob->cpu_data(),sizeof(Dtype),32*32*3,fid);
+    fwrite(transformed_blob->cpu_data(),sizeof(float),32*32*3,fid);
     fclose(fid);
     LOG(FATAL)<<"-------------";
     #endif
 
 }
 
-template<typename Dtype>
-void DataTransformer<Dtype>::Transformsimple(const cv::Mat& cv_img, Blob<Dtype>* transformed_blob)
+
+void DataTransformer::Transformsimple(const cv::Mat& cv_img, Blob* transformed_blob)
 {
   const int crop_size = param_.crop_size();
   const bool alter_color = param_.alter_color();
@@ -174,7 +174,7 @@ void DataTransformer<Dtype>::Transformsimple(const cv::Mat& cv_img, Blob<Dtype>*
 		cv::resize(cv_img,cv_img,cv::Size(width,height),0,0,CV_INTER_LINEAR);
     
 
-  Dtype* transformed_data = transformed_blob->mutable_cpu_data();
+  float* transformed_data = transformed_blob->mutable_cpu_data();
   int top_index;
   
 
@@ -187,15 +187,15 @@ void DataTransformer<Dtype>::Transformsimple(const cv::Mat& cv_img, Blob<Dtype>*
 			{   
 			  top_index = (c * height + h) * width + w;
 			  //pay attention to the format of caffe_rng_rand()!!!
-				transformed_data[top_index] = (static_cast<Dtype>(ptr[img_index++]) + Dtype(Rand(1000))/Dtype(1000) - Dtype(127.5))/Dtype(127.5);
+				transformed_data[top_index] = (static_cast<float>(ptr[img_index++]) + float(Rand(1000))/float(1000) - float(127.5))/float(127.5);
 				//
 			}
   } 
 }
  
-template<typename Dtype>
-void DataTransformer<Dtype>::TransformImgAndSeg(const std::vector<cv::Mat>& cv_img_seg,
-                                                Blob<Dtype>* transformed_data_blob, Blob<Dtype>* transformed_label_blob, const int ignore_label)
+
+void DataTransformer::TransformImgAndSeg(const std::vector<cv::Mat>& cv_img_seg,
+                                                Blob* transformed_data_blob, Blob* transformed_label_blob, const int ignore_label)
 {
   CHECK(cv_img_seg.size() == 2) << "Input must contain image and seg.";
 
@@ -298,8 +298,8 @@ void DataTransformer<Dtype>::TransformImgAndSeg(const std::vector<cv::Mat>& cv_i
   
   
 
-  Dtype* transformed_data  = transformed_data_blob->mutable_cpu_data();
-  Dtype* transformed_label = transformed_label_blob->mutable_cpu_data();
+  float* transformed_data  = transformed_data_blob->mutable_cpu_data();
+  float* transformed_label = transformed_label_blob->mutable_cpu_data();
 
   int top_index;
   const double* data_ptr;
@@ -323,7 +323,7 @@ void DataTransformer<Dtype>::TransformImgAndSeg(const std::vector<cv::Mat>& cv_i
         else
           top_index = (c * data_height + h) * data_width + w;
 
-        Dtype pixel = static_cast<Dtype>(data_ptr[data_index++]);
+        float pixel = static_cast<float>(data_ptr[data_index++]);
 
         if(do_alter_color[c])
           transformed_data[top_index] =pixel - mean_values_[c] + alter_color_value[c];
@@ -337,16 +337,16 @@ void DataTransformer<Dtype>::TransformImgAndSeg(const std::vector<cv::Mat>& cv_i
       else
         top_index = h * data_width + w;
 
-      Dtype pixel = static_cast<Dtype>(label_ptr[label_index++]);
+      float pixel = static_cast<float>(label_ptr[label_index++]);
       transformed_label[top_index] = pixel;
     }
   }
 
  
 }
-template<typename Dtype>
-void DataTransformer<Dtype>::TransformGan(const std::vector<cv::Mat>& cv_img_seg,
-                                                Blob<Dtype>* transformed_data_blob, Blob<Dtype>* transformed_label_blob, const int ignore_label)
+
+void DataTransformer::TransformGan(const std::vector<cv::Mat>& cv_img_seg,
+                                                Blob* transformed_data_blob, Blob* transformed_label_blob, const int ignore_label)
 {
   CHECK(cv_img_seg.size() == 2) << "Input must contain image and seg.";
 
@@ -428,14 +428,14 @@ void DataTransformer<Dtype>::TransformGan(const std::vector<cv::Mat>& cv_img_seg
   
   
 
-  Dtype* transformed_data  = transformed_data_blob->mutable_cpu_data();
-  Dtype* transformed_label = transformed_label_blob->mutable_cpu_data();
+  float* transformed_data  = transformed_data_blob->mutable_cpu_data();
+  float* transformed_label = transformed_label_blob->mutable_cpu_data();
 
   int top_index;
   const double* data_ptr;
   const uchar* label_ptr;
 
-	caffe_set(transformed_label_blob->count(),Dtype(0),transformed_label_blob->mutable_cpu_data());
+	caffe_set(transformed_label_blob->count(),float(0),transformed_label_blob->mutable_cpu_data());
   for (int h = 0; h < data_height; ++h)
   {
     data_ptr = cv_cropped_img.ptr<double>(h);
@@ -453,12 +453,12 @@ void DataTransformer<Dtype>::TransformGan(const std::vector<cv::Mat>& cv_img_seg
         else
           top_index = (c * data_height + h) * data_width + w;
 
-        Dtype pixel = static_cast<Dtype>(data_ptr[data_index++]);
+        float pixel = static_cast<float>(data_ptr[data_index++]);
 
         //if(do_alter_color[c])
-        //  transformed_data[top_index] = (pixel - Dtype(127.5) + alter_color_value[c])/Dtype(127.5);
+        //  transformed_data[top_index] = (pixel - float(127.5) + alter_color_value[c])/float(127.5);
         //else
-          transformed_data[top_index] = (pixel - Dtype(127.5) )/Dtype(127.5);
+          transformed_data[top_index] = (pixel - float(127.5) )/float(127.5);
       }
 
       // for segmentation
@@ -470,7 +470,7 @@ void DataTransformer<Dtype>::TransformGan(const std::vector<cv::Mat>& cv_img_seg
         top_index = (pixel * data_height + h) * data_width + data_width - 1 - w;
       else
         top_index = (pixel * data_height + h) * data_width + w;
-      transformed_label[top_index] = Dtype(1);
+      transformed_label[top_index] = float(1);
       
       
       #if 0
@@ -481,12 +481,12 @@ void DataTransformer<Dtype>::TransformGan(const std::vector<cv::Mat>& cv_img_seg
         else
           top_index = (c * data_height + h) * data_width + w;
 
-        Dtype pixel = static_cast<Dtype>(label_ptr[label_index++]);
+        float pixel = static_cast<float>(label_ptr[label_index++]);
 
         //if(do_alter_color[c])
-        //  transformed_data[top_index] = (pixel - Dtype(127.5) + alter_color_value[c])/Dtype(127.5);
+        //  transformed_data[top_index] = (pixel - float(127.5) + alter_color_value[c])/float(127.5);
         //else
-          transformed_label[top_index] = (pixel - Dtype(127.5) )/Dtype(127.5);
+          transformed_label[top_index] = (pixel - float(127.5) )/float(127.5);
       }
       #endif
     }
@@ -494,12 +494,9 @@ void DataTransformer<Dtype>::TransformGan(const std::vector<cv::Mat>& cv_img_seg
  
 }
 
-template <typename Dtype>
-int DataTransformer<Dtype>::Rand(int n) {
+int DataTransformer::Rand(int n) {
   CHECK_GT(n, 0);
   return (caffe_rng_rand() % n);
 }
-
-INSTANTIATE_CLASS(DataTransformer);
 
 }  // namespace caffe
